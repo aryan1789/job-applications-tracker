@@ -1,121 +1,51 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React, { useEffect, useState } from 'react';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [isDark, setIsDark] = useState(
+    () => document.documentElement.classList.contains('dark')
+  );
+
+  useEffect(() => {
+    if (isDark) document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
+  }, [isDark]);
+
+  const surface = isDark
+    ? 'bg-slate-900 text-slate-100'
+    : 'bg-slate-50 text-slate-900';
+  const card = isDark
+    ? 'bg-slate-800 border-slate-700'
+    : 'bg-white border-slate-200';
+  const accent = isDark ? 'from-cyan-400 to-sky-500' : 'from-amber-400 to-orange-500';
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className={`min-h-screen flex items-center justify-center transition-colors duration-300 ${surface}`}>
+      <div className={`p-8 rounded-2xl shadow-xl border transition-colors duration-300 ${card}`}>
+        <div className="flex items-center gap-2 mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-300">
+          <span className={`h-2 w-8 rounded-full bg-gradient-to-r ${accent}`} />
+          {isDark ? 'Dark mode' : 'Light mode'}
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
+
+        <h1 className="text-3xl font-semibold transition-colors duration-300">Tailwind Theme Toggle</h1>
+        <p className="mt-3 text-slate-600 dark:text-slate-300 transition-colors duration-300">
+          Tap the switch to flip the whole page theme.
+        </p>
+
         <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+          onClick={() => setIsDark((v) => !v)}
+          className="mt-6 inline-flex items-center gap-3 rounded-full border px-4 py-2 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-50 border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-md transition-all"
+          aria-label="Toggle color mode"
         >
-          Count is {count}
+          <span
+            className="inline-flex h-5 w-10 items-center rounded-full bg-slate-300 dark:bg-slate-600 transition-colors duration-300"
+          >
+            <span
+              className={`h-4 w-4 rounded-full bg-white dark:bg-slate-100 shadow transform transition-transform duration-300 ${isDark ? 'translate-x-5' : 'translate-x-1'}`}
+            />
+          </span>
+          <span className="text-sm font-semibold">{isDark ? 'Switch to Light' : 'Switch to Dark'}</span>
         </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      </div>
+    </div>
+  );
 }
-
-export default App
