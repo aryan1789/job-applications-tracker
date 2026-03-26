@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import { useAuth } from './contexts/AuthProvider';
@@ -119,6 +120,10 @@ export default function App() {
                 <p className={mutedText}>
                   Signed in as: <span className="font-medium">{user.email}</span>
                 </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Link to="/dashboard" className="px-3 py-2 bg-indigo-600 text-white rounded">Open dashboard</Link>
               </div>
 
               <button
