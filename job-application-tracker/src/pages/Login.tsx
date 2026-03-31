@@ -48,7 +48,7 @@ export default function Login() {
           type="button"
           onClick={handleGoogleSignIn}
           disabled={googleLoading}
-          className="px-4 py-2 border rounded bg-white text-slate-900 hover:bg-slate-50 disabled:opacity-50"
+          className="px-4 py-2 border rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50"
         >
           {googleLoading ? 'Redirecting to Google…' : 'Continue with Google'}
         </button>
@@ -71,7 +71,7 @@ export default function Login() {
           placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="px-3 py-2 border rounded bg-transparent"
+          className="px-3 py-2 border rounded bg-white dark:bg-slate-700 dark:text-slate-100 dark:border-slate-600"
           required
         />
         <input
@@ -79,7 +79,7 @@ export default function Login() {
           placeholder="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="px-3 py-2 border rounded bg-transparent"
+          className="px-3 py-2 border rounded bg-white dark:bg-slate-700 dark:text-slate-100 dark:border-slate-600"
           required
         />
         <button

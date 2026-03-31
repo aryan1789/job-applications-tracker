@@ -38,7 +38,7 @@ export default function Signup() {
           placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="px-3 py-2 border rounded bg-transparent"
+          className="px-3 py-2 border rounded bg-white dark:bg-slate-700 dark:text-slate-100 dark:border-slate-600"
           required
         />
         <input
@@ -46,7 +46,7 @@ export default function Signup() {
           placeholder="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="px-3 py-2 border rounded bg-transparent"
+          className="px-3 py-2 border rounded bg-white dark:bg-slate-700 dark:text-slate-100 dark:border-slate-600"
           required
         />
         <button

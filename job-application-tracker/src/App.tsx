@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import { useAuth } from './contexts/AuthProvider';
+import { isDark as themeIsDark, setDark as setThemeDark } from './lib/theme'
 
 export default function App() {
-  const [isDark, setIsDark] = useState(
-    () => document.documentElement.classList.contains('dark')
-  );
+  const [isDark, setIsDark] = useState(() => themeIsDark());
 
   let user = null;
   let loading = true;
@@ -23,9 +22,22 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (isDark) document.documentElement.classList.add('dark');
-    else document.documentElement.classList.remove('dark');
+    setThemeDark(isDark)
   }, [isDark]);
+
+  useEffect(() => {
+    function onTheme(e: Event) {
+      try {
+        // @ts-ignore - custom event
+        const d = (e as CustomEvent).detail
+        setIsDark(!!d)
+      } catch (err) {
+        setIsDark(themeIsDark())
+      }
+    }
+    window.addEventListener('themechange', onTheme as EventListener)
+    return () => window.removeEventListener('themechange', onTheme as EventListener)
+  }, [])
 
   const surface = isDark
     ? 'bg-slate-900 text-slate-100'
