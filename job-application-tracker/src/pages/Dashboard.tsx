@@ -3,6 +3,7 @@ import { isDark as themeIsDark } from "../lib/theme";
 import AddApplicationModal from "../components/AddApplicationModal";
 import { STATUS } from "../lib/types";
 import type { JobStatus } from "../lib/types";
+import Card from 'react-bootstrap/Card';
 
 type Job = {
   id: string;
@@ -32,12 +33,12 @@ function uid() {
   return String(n);
 }
 
-function truncate(text: string, max: number) {
-  const t = text.trim();
-  if (t.length <= max && t.length>0) return t ;
-  else if (t.length === 0) return "-";
-  return `${t.slice(0, max)}…`;
-}
+// function truncate(text: string, max: number) {
+//   const t = text.trim();
+//   if (t.length <= max && t.length>0) return t ;
+//   else if (t.length === 0) return "-";
+//   return `${t.slice(0, max)}…`;
+// }
 
 
 export default function Dashboard() {
@@ -62,6 +63,12 @@ export default function Dashboard() {
  }, [jobs]);
 
   useEffect(() => {
+    // debug: log jobs length and items
+    // eslint-disable-next-line no-console
+    console.log("Dashboard jobs:", jobs.length, jobs);
+  }, [jobs]);
+
+  useEffect(() => {
     function onTheme(e: Event) {
       try {
         // @ts-ignore - custom event detail is boolean
@@ -76,18 +83,18 @@ export default function Dashboard() {
 
  
 
-  const fieldLight =
-    "bg-slate-50 border-slate-400 text-slate-950 placeholder:text-slate-600";
-  const fieldDark =
-    "bg-slate-700 text-slate-100 border-slate-600 placeholder:text-slate-400";
-  const optionClass = isDark ? "bg-slate-800 text-slate-100" : "bg-white text-slate-950";
+  // const fieldLight =
+  //   "bg-slate-50 border-slate-400 text-slate-950 placeholder:text-slate-600";
+  // const fieldDark =
+  //   "bg-slate-700 text-slate-100 border-slate-600 placeholder:text-slate-400";
+  //const optionClass = isDark ? "bg-slate-800 text-slate-100" : "bg-white text-slate-950";
 
   const cardBg = isDark ? "bg-slate-800 border-slate-700" : "bg-slate-200 border-slate-300";
-  const rowHover = isDark ? "hover:bg-slate-700/50" : "hover:bg-slate-300/60";
-  const thClass = isDark
-    ? "text-left text-xs font-semibold uppercase tracking-wide text-slate-400 px-3 py-2"
-    : "text-left text-xs font-semibold uppercase tracking-wide text-slate-600 px-3 py-2";
-  const tdClass = "px-3 py-2 align-top text-sm";
+  // const rowHover = isDark ? "hover:bg-slate-700/50" : "hover:bg-slate-300/60";
+  // const thClass = isDark
+    // ? "text-left text-xs font-semibold uppercase tracking-wide text-slate-400 px-3 py-2"
+    // : "text-left text-xs font-semibold uppercase tracking-wide text-slate-600 px-3 py-2";
+  // const tdClass = "px-3 py-2 align-top text-sm";
   
 
   function closeModal() {
@@ -119,16 +126,16 @@ export default function Dashboard() {
     setModalOpen(false);
   }
 
-  function updateJob(id: string, patch: Partial<Job>) {
-    setJobs((s) => s.map((j) => (j.id === id ? { ...j, ...patch } : j)));
-  }
+  // function updateJob(id: string, patch: Partial<Job>) {
+  //   setJobs((s) => s.map((j) => (j.id === id ? { ...j, ...patch } : j)));
+  // }
 
-  function deleteJob(id: string) {
-    setJobs((s) => s.filter((j) => j.id !== id));
-  }
+  // function deleteJob(id: string) {
+  //   setJobs((s) => s.filter((j) => j.id !== id));
+  // }
 
-  const tableSelect =
-    `min-w-[11rem] max-w-[14rem] text-sm border rounded px-2 py-1.5 ${isDark ? fieldDark : fieldLight}`;
+  // const tableSelect =
+  //   `min-w-[11rem] max-w-[14rem] text-sm border rounded px-2 py-1.5 ${isDark ? fieldDark : fieldLight}`;
 
   return (
     <div
@@ -137,13 +144,16 @@ export default function Dashboard() {
       }`}
     >
       <header className="flex items-center justify-between mb-6">
-        <h1
+        <div className="flex items-center gap-3">
+          <h1
           className={`!m-0 !mb-0 text-2xl font-semibold tracking-tight !leading-tight ${
             isDark ? "!text-slate-100" : "!text-slate-950"
           }`}
         >
           Applications
         </h1>
+          <div className="text-sm text-slate-500 mt-1">Jobs: {jobs.length}</div>
+        </div>
       </header>
 
       {jobs.length === 0 ? (
@@ -151,67 +161,30 @@ export default function Dashboard() {
           No applications yet — use the + button to add one.
         </div>
       ) : (
-        <div
-          className={`rounded-lg border overflow-x-auto shadow-sm ${cardBg}`}
-        >
-          <table className="w-full min-w-[640px] border-collapse">
-            <thead>
-              <tr
-                className={
-                  isDark ? "border-b border-slate-600" : "border-b border-slate-400"
-                }
-              >
-                <th className={thClass}>Role</th>
-                <th className={thClass}>Company</th>
-                <th className={thClass}>Description</th>
-                <th className={thClass}>Notes</th>
-                <th className={thClass}>Status</th>
-                <th className={`${thClass} w-28`}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {jobs.map((job) => (
-                <tr key={job.id} className={`border-b last:border-b-0 ${isDark ? "border-slate-600" : "border-slate-400"} ${rowHover}`}>
-                  <td className={`${tdClass} font-medium`}>{truncate(job.role, 30)}</td>
-                  <td className={tdClass}>{job.company}</td>
-                  <td className={`${tdClass} max-w-[200px]`}>
-                    {truncate(job.jobDescription, 80)}
-                  </td>
-                  <td className={`${tdClass} max-w-[180px]`}>
-                    {truncate(job.notes, 64)}
-                  </td>
-                  <td className={tdClass}>
-                    <label className="sr-only" htmlFor={`status-${job.id}`}>
-                      Status for {job.role} at {job.company}
-                    </label>
-                    <select
-                      id={`status-${job.id}`}
-                      value={job.status}
-                      onChange={(e) => {
-                        updateJob(job.id, { status: e.target.value as JobStatus });
-                      }}
-                      className={tableSelect}
-                    >
-                      {STATUS.map((s) => (
-                        <option key={s} className={optionClass} value={s}>
-                          {STATUS_LABELS[s]}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className={tdClass}>
-                    <button
-                      type="button"
-                      onClick={() => deleteJob(job.id)}
-                      className={`text-sm hover:underline ${isDark ? "text-red-400" : "text-red-700"}`}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="overflow-x-auto">
+
+
+        <div className="p-4">
+            {jobs.map((job, i) => (
+              <div key={job.id} className="mb-4">
+                <Card className={`w-full rounded-lg border shadow-sm ${cardBg}`}>
+                  <Card.Body>
+                    <div className="flex items-start justify-between gap-3">
+                      <h3 className="text-lg font-bold">{job.role || "-"}</h3>
+                      <div className="shrink-0">
+                        <span className={`text-xs font-medium inline-block px-2 py-1 rounded-full ${isDark ? 'bg-slate-700 text-slate-100' : 'bg-slate-200 text-slate-900'}`}>
+                          {STATUS_LABELS[job.status]}
+                        </span>
+                      </div>
+                    </div>
+                    <h5 className="mb-2 text-muted">{job.company || "-"}</h5>
+                    <p className="text-sm text-muted">{job.jobDescription || job.notes || "-"}</p>
+                    
+                  </Card.Body>
+                </Card>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
