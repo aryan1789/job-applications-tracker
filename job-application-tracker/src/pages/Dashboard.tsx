@@ -137,7 +137,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className={`max-w-6xl mx-auto p-6 text-left ${isDark ? "text-slate-100" : "text-slate-950"}`}>
+    <div className={`p-3 text-left ${isDark ? "text-slate-100" : "text-slate-950"}`}>
       <header className="flex items-center gap-3 mb-6">
         <h1 className={`!m-0 text-2xl font-semibold tracking-tight !leading-tight ${isDark ? "!text-slate-100" : "!text-slate-950"}`}>
           Applications
@@ -150,7 +150,7 @@ export default function Dashboard() {
           No applications yet — use the + button to add one.
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-4">
           {jobs.map((job) => {
             const badge = isDark ? STATUS_BADGE_DARK[job.status] : STATUS_BADGE_LIGHT[job.status];
             const border = STATUS_BORDER[job.status];
@@ -158,41 +158,45 @@ export default function Dashboard() {
               <Card
                 key={job.id}
                 onClick={() => setExpandedJob(job)}
-                className={`rounded-xl border border-l-4 shadow-sm transition-all duration-150 cursor-pointer ${cardBg} ${cardHover} ${border}`}
+                className={`rounded-2xl border border-l-4 shadow-sm transition-all duration-150 cursor-pointer ${cardBg} ${cardHover} ${border}`}
               >
-                <Card.Body className="p-4 flex flex-col gap-2" style={{ aspectRatio: "1 / 1" }}>
-                  <div className="flex items-start justify-between gap-2">
+                <Card.Body className="p-5 flex flex-row items-center gap-6">
+                  {/* Left: role + company */}
+                  <div className="flex flex-col gap-1 w-56 shrink-0">
                     <h3
-                      className={`text-base font-semibold leading-tight !m-0 ${isDark ? "text-slate-100" : "text-slate-900"}`}
+                      className={`text-lg font-bold leading-snug !m-0 ${isDark ? "text-slate-100" : "text-slate-900"}`}
                       style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
                     >
                       {job.role || "-"}
                     </h3>
-                    <span className={`shrink-0 text-xs font-medium px-2 py-0.5 rounded-full ${badge}`}>
-                      {STATUS_LABELS[job.status]}
-                    </span>
+                    <p className={`text-sm font-medium !m-0 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                      {job.company || "-"}
+                    </p>
                   </div>
 
-                  <p className={`text-sm font-medium !m-0 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                    {job.company || "-"}
-                  </p>
+                  {/* Divider */}
+                  <div className={`self-stretch w-px ${isDark ? "bg-slate-700" : "bg-slate-100"}`} />
 
-                  <hr className={`my-1 border-0 border-t ${isDark ? "border-slate-700" : "border-slate-100"}`} />
-
-                  <div className="flex flex-col gap-1">
+                  {/* Middle: desc + notes */}
+                  <div className="flex flex-col gap-1 flex-1 min-w-0">
                     {job.jobDescription.trim() && (
-                      <p className={`text-xs leading-relaxed !m-0 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                        <span className={`font-medium ${isDark ? "text-slate-300" : "text-slate-600"}`}>Job Description:</span>
-                        {truncate(job.jobDescription, 50)}
+                      <p className={`text-sm leading-relaxed !m-0 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                        <span className={`font-medium ${isDark ? "text-slate-300" : "text-slate-600"}`}>Job Description: </span>
+                        {truncate(job.jobDescription, 120)}
                       </p>
                     )}
                     {job.notes.trim() && (
-                      <p className={`text-xs leading-relaxed !m-0 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                      <p className={`text-sm leading-relaxed !m-0 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                         <span className={`font-medium ${isDark ? "text-slate-300" : "text-slate-600"}`}>Notes: </span>
-                        {truncate(job.notes, 40)}
+                        {truncate(job.notes, 80)}
                       </p>
                     )}
                   </div>
+
+                  {/* Right: badge */}
+                  <span className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${badge}`}>
+                    {STATUS_LABELS[job.status]}
+                  </span>
                 </Card.Body>
               </Card>
             );

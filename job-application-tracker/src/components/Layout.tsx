@@ -52,7 +52,7 @@ export default function Layout({ children }: Props) {
           <div className="text-sm text-slate-500"> </div>
         </header>
 
-        <main className="p-6">{children}</main>
+        <main className="p-3">{children}</main>
       </div>
     </div>
   )

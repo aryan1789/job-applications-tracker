@@ -2,7 +2,6 @@
 
 :root {
   --text: #6b6375;
-  --text-h: #08060d;
   --bg: #fff;
   --border: #e5e4e7;
   --code-bg: #f4f3ec;
@@ -35,7 +34,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --text: #9ca3af;
-    --text-h: #f3f4f6;
+
     --bg: #16171d;
     --border: #2e303a;
     --code-bg: #1f2028;
@@ -72,7 +71,6 @@ html.dark {
   max-width: 100%;
   margin: 0 auto;
   text-align: center;
-  border-inline: 1px solid var(--border);
   min-height: 100svh;
   display: flex;
   flex-direction: column;
@@ -81,13 +79,18 @@ html.dark {
 
 body {
   margin: 0;
+  background: #f1f5f9;
+}
+
+html.dark body {
+  background: #0f172a;
 }
 
 h1,
 h2 {
   font-family: var(--heading);
   font-weight: 500;
-  color: var(--text-h);
+  color: var(--text);
 }
 
 h1 {
@@ -117,7 +120,7 @@ code,
   font-family: var(--mono);
   display: inline-flex;
   border-radius: 4px;
-  color: var(--text-h);
+  color: var(--text);
 }
 
 code {
