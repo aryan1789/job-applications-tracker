@@ -10,6 +10,7 @@ interface Props {
     jobDescription: string;
     notes: string;
     status: JobStatus;
+    appliedDate: string;
   }) => void;
   isDark: boolean;
   STATUS: readonly JobStatus[];
@@ -30,6 +31,7 @@ export default function AddApplicationModal({
     jobDescription: "",
     notes: "",
     status: (STATUS && STATUS[0]) as JobStatus,
+    appliedDate: new Date().toISOString().split("T")[0],
   };
 
   const [form, setForm] = useState(emptyForm);
@@ -152,6 +154,19 @@ export default function AddApplicationModal({
               rows={3}
               className={`w-full border rounded px-3 py-2 resize-y min-h-[72px] ${isDark ? fieldDark : fieldLight}`}
               placeholder="Your notes…"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="app-date" className={`block text-sm font-medium mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+              Date applied
+            </label>
+            <input
+              id="app-date"
+              type="date"
+              value={form.appliedDate}
+              onChange={(e) => setForm((f) => ({ ...f, appliedDate: e.target.value }))}
+              className={`w-full border rounded px-3 py-2 ${isDark ? fieldDark : fieldLight}`}
             />
           </div>
 

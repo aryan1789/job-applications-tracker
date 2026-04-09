@@ -12,6 +12,7 @@ type Job = {
   jobDescription: string;
   notes: string;
   status: JobStatus;
+  appliedDate: string;
 };
 
 const STORAGE_KEY = "applications";
@@ -108,8 +109,8 @@ export default function Dashboard() {
     return () => window.removeEventListener("themechange", onTheme as EventListener);
   }, []);
 
-  const cardBg = isDark ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200";
-  const cardHover = isDark ? "hover:border-slate-600" : "hover:border-slate-300 hover:shadow-md";
+  const cardBg = isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-white border-slate-200";
+  const cardHover = isDark ? "hover:bg-slate-800 hover:border-slate-600 hover:shadow-lg" : "hover:border-slate-300 hover:shadow-md";
 
   function handleAdd(payload: {
     company: string;
@@ -117,6 +118,7 @@ export default function Dashboard() {
     jobDescription: string;
     notes: string;
     status: JobStatus;
+    appliedDate: string;
   }) {
     const company = payload.company.trim();
     const role = payload.role.trim();
@@ -131,13 +133,14 @@ export default function Dashboard() {
       jobDescription: payload.jobDescription.trim(),
       notes: payload.notes.trim(),
       status: payload.status,
+      appliedDate: payload.appliedDate,
     };
     setJobs((prev) => [newJob, ...prev]);
     setModalOpen(false);
   }
 
   return (
-    <div className={`p-3 text-left ${isDark ? "text-slate-100" : "text-slate-950"}`}>
+    <div className={`px-6 py-4 text-left ${isDark ? "text-slate-100" : "text-slate-950"}`}>
       <header className="flex items-center gap-3 mb-6">
         <h1 className={`!m-0 text-2xl font-semibold tracking-tight !leading-tight ${isDark ? "!text-slate-100" : "!text-slate-950"}`}>
           Applications
@@ -150,7 +153,7 @@ export default function Dashboard() {
           No applications yet — use the + button to add one.
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           {jobs.map((job) => {
             const badge = isDark ? STATUS_BADGE_DARK[job.status] : STATUS_BADGE_LIGHT[job.status];
             const border = STATUS_BORDER[job.status];
@@ -158,43 +161,21 @@ export default function Dashboard() {
               <Card
                 key={job.id}
                 onClick={() => setExpandedJob(job)}
-                className={`rounded-2xl border border-l-4 shadow-sm transition-all duration-150 cursor-pointer ${cardBg} ${cardHover} ${border}`}
+                className={`rounded-xl border-l-4 shadow-sm transition-all duration-200 cursor-pointer ${cardBg} ${cardHover} ${border}`}
               >
-                <Card.Body className="p-5 flex flex-row items-center gap-6">
-                  {/* Left: role + company */}
-                  <div className="flex flex-col gap-1 w-56 shrink-0">
+                <Card.Body className="px-6 py-5 flex flex-row items-center justify-between gap-6">
+                  <div className="flex flex-col gap-0.5 min-w-0">
                     <h3
-                      className={`text-lg font-bold leading-snug !m-0 ${isDark ? "text-slate-100" : "text-slate-900"}`}
-                      style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+                      className={`text-base font-semibold leading-snug !m-0 truncate ${isDark ? "text-slate-100" : "text-slate-900"}`}
                     >
                       {job.role || "-"}
                     </h3>
-                    <p className={`text-sm font-medium !m-0 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                    <p className={`text-sm !m-0 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                       {job.company || "-"}
                     </p>
                   </div>
 
-                  {/* Divider */}
-                  <div className={`self-stretch w-px ${isDark ? "bg-slate-700" : "bg-slate-100"}`} />
-
-                  {/* Middle: desc + notes */}
-                  <div className="flex flex-col gap-1 flex-1 min-w-0">
-                    {job.jobDescription.trim() && (
-                      <p className={`text-sm leading-relaxed !m-0 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                        <span className={`font-medium ${isDark ? "text-slate-300" : "text-slate-600"}`}>Job Description: </span>
-                        {truncate(job.jobDescription, 120)}
-                      </p>
-                    )}
-                    {job.notes.trim() && (
-                      <p className={`text-sm leading-relaxed !m-0 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                        <span className={`font-medium ${isDark ? "text-slate-300" : "text-slate-600"}`}>Notes: </span>
-                        {truncate(job.notes, 80)}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Right: badge */}
-                  <span className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${badge}`}>
+                  <span className={`shrink-0 text-xs font-semibold px-3 py-1 rounded-md ${badge}`}>
                     {STATUS_LABELS[job.status]}
                   </span>
                 </Card.Body>
@@ -204,59 +185,78 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Expanded job detail overlay */}
+      {/* Side panel backdrop */}
       {expandedJob && (
         <div
-          className="fixed inset-0 z-40 flex items-center justify-center p-4"
-          style={{ backdropFilter: "blur(6px)", backgroundColor: isDark ? "rgba(0,0,0,0.6)" : "rgba(0,0,0,0.35)" }}
+          className="fixed inset-0 z-40"
+          style={{ backgroundColor: "rgba(0,0,0,0.2)" }}
           onClick={() => setExpandedJob(null)}
-        >
-          <div
-            className={`relative w-full max-w-lg max-h-[80vh] overflow-y-auto rounded-2xl border border-l-4 shadow-2xl ${cardBg} ${STATUS_BORDER[expandedJob.status]}`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              aria-label="Close"
-              onClick={() => setExpandedJob(null)}
-              className={`absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-full text-sm transition-colors ${isDark ? "text-slate-400 hover:bg-slate-700 hover:text-slate-100" : "text-slate-400 hover:bg-slate-100 hover:text-slate-700"}`}
-            >
-              ✕
-            </button>
+        />
+      )}
 
-            <div className="p-6 flex flex-col gap-4">
-              <div className="flex items-start justify-between gap-3 pr-8">
-                <h2 className={`text-xl font-bold leading-tight !m-0 ${isDark ? "text-slate-100" : "text-slate-900"}`}>
+      {/* Slide-out side panel */}
+      <div
+        className={`fixed top-0 right-0 h-full z-50 w-96 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
+          isDark ? "bg-slate-900 border-l border-slate-700" : "bg-white border-l border-slate-200"
+        } ${expandedJob ? "translate-x-0" : "translate-x-full"}`}
+      >
+        {expandedJob && (
+          <>
+            {/* Panel header */}
+            <div className={`flex items-center justify-between px-6 py-5 border-b ${isDark ? "border-slate-700" : "border-slate-200"}`}>
+              <span className={`text-xs font-semibold uppercase tracking-wider ${isDark ? "text-slate-500" : "text-slate-400"}`}>
+                Application Detail
+              </span>
+              <button
+                type="button"
+                onClick={() => setExpandedJob(null)}
+                className={`w-7 h-7 flex items-center justify-center rounded-full text-sm transition-colors ${isDark ? "text-slate-400 hover:bg-slate-800 hover:text-slate-100" : "text-slate-400 hover:bg-slate-100 hover:text-slate-700"}`}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Panel content */}
+            <div className="flex flex-col gap-6 p-6 overflow-y-auto flex-1">
+              <div className="flex flex-col gap-1">
+                <h2 className={`text-xl font-bold leading-snug !m-0 ${isDark ? "text-slate-100" : "text-slate-900"}`}>
                   {expandedJob.role || "-"}
                 </h2>
-                <span className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${isDark ? STATUS_BADGE_DARK[expandedJob.status] : STATUS_BADGE_LIGHT[expandedJob.status]}`}>
-                  {STATUS_LABELS[expandedJob.status]}
-                </span>
+                <p className={`text-base !m-0 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                  {expandedJob.company || "-"}
+                </p>
               </div>
 
-              <p className={`text-base font-medium !m-0 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                {expandedJob.company || "-"}
-              </p>
+              <div className="flex items-center gap-3">
+                <span className={`self-start text-xs font-semibold px-3 py-1 rounded-md ${isDark ? STATUS_BADGE_DARK[expandedJob.status] : STATUS_BADGE_LIGHT[expandedJob.status]}`}>
+                  {STATUS_LABELS[expandedJob.status]}
+                </span>
+                {expandedJob.appliedDate && (
+                  <span className={`text-xs ${isDark ? "text-slate-500" : "text-slate-400"}`}>
+                    Applied {new Date(expandedJob.appliedDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                  </span>
+                )}
+              </div>
 
-              <hr className={`border-0 border-t ${isDark ? "border-slate-700" : "border-slate-100"}`} />
+              <hr className={`border-0 border-t !m-0 ${isDark ? "border-slate-700" : "border-slate-200"}`} />
 
-              <div className="flex flex-col gap-1">
-                <p className={`text-xs font-semibold uppercase tracking-wide !m-0 ${isDark ? "text-slate-500" : "text-slate-400"}`}>Job Description</p>
+              <div className="flex flex-col gap-2">
+                <p className={`text-xs font-semibold uppercase tracking-wider !m-0 ${isDark ? "text-slate-500" : "text-slate-400"}`}>Job Description</p>
                 <p className={`text-sm leading-relaxed whitespace-pre-wrap !m-0 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                   {expandedJob.jobDescription.trim() || "-"}
                 </p>
               </div>
 
-              <div className="flex flex-col gap-1">
-                <p className={`text-xs font-semibold uppercase tracking-wide !m-0 ${isDark ? "text-slate-500" : "text-slate-400"}`}>Notes</p>
+              <div className="flex flex-col gap-2">
+                <p className={`text-xs font-semibold uppercase tracking-wider !m-0 ${isDark ? "text-slate-500" : "text-slate-400"}`}>Notes</p>
                 <p className={`text-sm leading-relaxed whitespace-pre-wrap !m-0 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                   {expandedJob.notes.trim() || "-"}
                 </p>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </div>
 
       <button
         type="button"
