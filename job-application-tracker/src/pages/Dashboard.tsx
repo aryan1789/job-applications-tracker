@@ -5,6 +5,8 @@ import AddApplicationModal from "../components/AddApplicationModal";
 import { STATUS } from "../lib/types";
 import type { JobStatus } from "../lib/types";
 import Card from 'react-bootstrap/Card';
+import { supabase } from "../lib/supabase";
+import { useAuth } from "../contexts/AuthProvider";
 
 type Job = {
   id: string;
@@ -13,10 +15,20 @@ type Job = {
   jobDescription: string;
   notes: string;
   status: JobStatus;
-  appliedDate: string;
+  createdAt: string;
 };
 
-const STORAGE_KEY = "applications";
+function fromRow(row: Record<string, unknown>): Job {
+  return {
+    id: row.id as string,
+    company: row.company_name as string,
+    role: row.role_name as string,
+    jobDescription: row.description as string,
+    notes: row.notes as string,
+    status: row.status as JobStatus,
+    createdAt: row.created_at as string,
+  };
+}
 
 const STATUS_LABELS: Record<JobStatus, string> = {
   applied: "Applied",
@@ -58,12 +70,8 @@ const STATUS_BORDER: Record<JobStatus, string> = {
   rejected: "border-l-red-400",
 };
 
-function uid() {
-  const n = Math.floor(Math.random() * 10000) + 1;
-  return String(n);
-}
-
 export default function Dashboard() {
+  const { user } = useAuth();
   const [isDark, setIsDark] = useState(() => themeIsDark());
   const [modalOpen, setModalOpen] = useState(false);
   const [expandedJob, setExpandedJob] = useState<Job | null>(null);
@@ -72,23 +80,26 @@ export default function Dashboard() {
   const [panelStatus, setPanelStatus] = useState<JobStatus>("applied");
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const [discardConfirm, setDiscardConfirm] = useState(false);
-  const [editForm, setEditForm] = useState({ role: "", company: "", jobDescription: "", notes: "", appliedDate: "" });
+  const [editForm, setEditForm] = useState({ role: "", company: "", jobDescription: "", notes: "" });
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [jobs, setJobs] = useState<Job[]>(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return [];
-      const parsed = JSON.parse(raw) as unknown;
-      if (!Array.isArray(parsed)) return [];
-      return parsed as Job[];
-    } catch {
-      return [];
-    }
-  });
-
+  // Fetch jobs from Supabase
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs)); } catch {}
-  }, [jobs]);
+    if (!user) return;
+    setLoading(true);
+    supabase
+      .from("applications")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (error) setError(error.message);
+        else setJobs((data ?? []).map(fromRow));
+        setLoading(false);
+      });
+  }, [user]);
 
   useEffect(() => {
     function onTheme(e: Event) {
@@ -99,7 +110,6 @@ export default function Dashboard() {
     return () => window.removeEventListener("themechange", onTheme as EventListener);
   }, []);
 
-  // sync panel state when a job is opened
   useEffect(() => {
     if (expandedJob) {
       setPanelStatus(expandedJob.status);
@@ -108,7 +118,6 @@ export default function Dashboard() {
         company: expandedJob.company,
         jobDescription: expandedJob.jobDescription,
         notes: expandedJob.notes,
-        appliedDate: expandedJob.appliedDate,
       });
       setEditMode(false);
       setDeleteConfirm(false);
@@ -117,23 +126,48 @@ export default function Dashboard() {
     }
   }, [expandedJob?.id]);
 
-  function updateJob(id: string, patch: Partial<Job>) {
+  async function updateJob(id: string, patch: Partial<Job>) {
+    const dbPatch: Record<string, unknown> = {};
+    if (patch.company !== undefined) dbPatch.company_name = patch.company;
+    if (patch.role !== undefined) dbPatch.role_name = patch.role;
+    if (patch.jobDescription !== undefined) dbPatch.description = patch.jobDescription;
+    if (patch.notes !== undefined) dbPatch.notes = patch.notes;
+    if (patch.status !== undefined) dbPatch.status = patch.status;
+
+    const { error } = await supabase.from("applications").update(dbPatch).eq("id", id);
+    if (error) { setError(error.message); return; }
+
     setJobs(prev => prev.map(j => j.id === id ? { ...j, ...patch } : j));
     setExpandedJob(prev => prev?.id === id ? { ...prev, ...patch } : prev);
   }
 
-  function deleteJob(id: string) {
+  async function deleteJob(id: string) {
+    const { error } = await supabase.from("applications").delete().eq("id", id);
+    if (error) { setError(error.message); return; }
     setJobs(prev => prev.filter(j => j.id !== id));
     setExpandedJob(null);
   }
 
-  function handleAdd(payload: {
+  async function handleAdd(payload: {
     company: string; role: string; jobDescription: string;
-    notes: string; status: JobStatus; appliedDate: string;
+    notes: string; status: JobStatus;
   }) {
-    let id = uid();
-    while (jobs.some(j => j.id === id)) id = uid();
-    setJobs(prev => [{ id, ...payload, company: payload.company.trim(), role: payload.role.trim(), jobDescription: payload.jobDescription.trim(), notes: payload.notes.trim() }, ...prev]);
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("applications")
+      .insert({
+        user_id: user.id,
+        company_name: payload.company.trim(),
+        role_name: payload.role.trim(),
+        description: payload.jobDescription.trim(),
+        notes: payload.notes.trim(),
+        status: payload.status,
+      })
+      .select()
+      .single();
+
+    if (error) { setError(error.message); return; }
+    setJobs(prev => [fromRow(data), ...prev]);
     setModalOpen(false);
   }
 
@@ -157,7 +191,6 @@ export default function Dashboard() {
       company: editForm.company.trim(),
       jobDescription: editForm.jobDescription.trim(),
       notes: editForm.notes.trim(),
-      appliedDate: editForm.appliedDate,
     });
     setEditMode(false);
   }
@@ -176,7 +209,13 @@ export default function Dashboard() {
         <div className="text-sm text-slate-500 mt-1">Jobs: {jobs.length}</div>
       </header>
 
-      {jobs.length === 0 ? (
+      {error && (
+        <div className="mb-4 text-sm text-red-500">{error}</div>
+      )}
+
+      {loading ? (
+        <div className={isDark ? "text-slate-400" : "text-slate-500"}>Loading…</div>
+      ) : jobs.length === 0 ? (
         <div className={isDark ? "text-slate-400" : "text-slate-500"}>
           No applications yet — use the + button to add one.
         </div>
@@ -295,13 +334,11 @@ export default function Dashboard() {
             {/* Content */}
             <div className="flex flex-col gap-5 p-6 overflow-y-auto flex-1">
               {editMode ? (
-                // Edit form
                 <>
                   <div className="flex flex-col gap-3">
                     {[
                       { label: "Role", key: "role", type: "text" },
                       { label: "Company", key: "company", type: "text" },
-                      { label: "Date Applied", key: "appliedDate", type: "date" },
                     ].map(({ label, key, type }) => (
                       <div key={key}>
                         <label className={`block text-xs font-semibold uppercase tracking-wider mb-1 ${isDark ? "text-slate-500" : "text-slate-400"}`}>{label}</label>
@@ -334,7 +371,6 @@ export default function Dashboard() {
                   </div>
                 </>
               ) : (
-                // View mode
                 <>
                   <div className="flex flex-col gap-1">
                     <h2 className={`text-xl font-bold leading-snug !m-0 ${isDark ? "text-slate-100" : "text-slate-900"}`}>
@@ -343,9 +379,9 @@ export default function Dashboard() {
                     <p className={`text-base !m-0 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                       {expandedJob.company || "-"}
                     </p>
-                    {expandedJob.appliedDate && (
+                    {expandedJob.createdAt && (
                       <p className={`text-xs !m-0 mt-0.5 ${isDark ? "text-slate-500" : "text-slate-400"}`}>
-                        Applied {new Date(expandedJob.appliedDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                        Added {new Date(expandedJob.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                       </p>
                     )}
                   </div>
@@ -377,7 +413,6 @@ export default function Dashboard() {
                       </div>
                     )}
                   </div>
-
 
                   <hr className={`border-0 border-t !m-0 ${panelBorder}`} />
 
