@@ -206,7 +206,6 @@ export default function Dashboard() {
         <h1 className={`!m-0 text-2xl font-semibold tracking-tight !leading-tight ${isDark ? "!text-slate-100" : "!text-slate-950"}`}>
           Applications
         </h1>
-        <div className="text-sm text-slate-500 mt-1">Jobs: {jobs.length}</div>
       </header>
 
       {error && (

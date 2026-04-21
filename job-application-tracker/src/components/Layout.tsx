@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import Sidebar from './Sidebar'
 import { isDark as themeIsDark } from '../lib/theme'
 import { CgSidebarOpen } from 'react-icons/cg'
+import { IoMdNotifications, IoMdNotificationsOutline } from 'react-icons/io'
 
 type Props = {
   children: ReactNode
@@ -58,7 +59,12 @@ export default function Layout({ children }: Props) {
             </h2>
           </div>
 
-          <div className="text-sm text-slate-500"> </div>
+          <button
+            aria-label="Notifications"
+            className={`p-1.5 rounded-md transition-colors ${isDark ? 'text-slate-400 hover:text-slate-100 hover:bg-slate-800' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-300'}`}
+          >
+            {false ? <IoMdNotifications size={22} /> : <IoMdNotificationsOutline size={22} />}
+          </button>
         </header>
 
         <main className="p-2">{children}</main>

@@ -9,6 +9,7 @@ import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
 import Profile from './pages/Profile'
 import Layout from './components/Layout'
+import Analytics from './pages/Analytics'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -20,6 +21,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/profile" element={<Layout><Profile /></Layout>} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/analytics" element={<Layout><Analytics /></Layout>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
