@@ -9,3 +9,13 @@ export const STATUS = [
 ] as const;
 
 export type JobStatus = typeof STATUS[number];
+
+export type Job = {
+  id: string;
+  company: string;
+  role: string;
+  jobDescription: string;
+  notes: string;
+  status: JobStatus;
+  createdAt: string;
+};

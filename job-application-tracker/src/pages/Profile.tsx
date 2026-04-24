@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../contexts/AuthProvider'
-import { isDark as themeIsDark } from '../lib/theme'
 import { supabase } from '../lib/supabase'
 import { FiX } from 'react-icons/fi'
+import { useTheme } from '../utils/useTheme'
 
 export default function Profile() {
   const { user } = useAuth()
-  const [isDark, setIsDark] = useState(() => themeIsDark())
+  const { isDark } = useTheme()
   const [name, setName] = useState('')
   const [bio, setBio] = useState('')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
@@ -16,15 +16,6 @@ export default function Profile() {
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    function onTheme(e: Event) {
-      try { setIsDark(!!(e as CustomEvent).detail) }
-      catch { setIsDark(themeIsDark()) }
-    }
-    window.addEventListener('themechange', onTheme as EventListener)
-    return () => window.removeEventListener('themechange', onTheme as EventListener)
-  }, [])
 
   useEffect(() => {
     if (!user) return

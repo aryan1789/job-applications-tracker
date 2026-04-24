@@ -1,22 +1,13 @@
 import { useEffect, useState } from "react";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
-import { isDark as themeIsDark } from "../lib/theme";
 import AddApplicationModal from "../components/AddApplicationModal";
-import { STATUS } from "../lib/types";
-import type { JobStatus } from "../lib/types";
+import { STATUS, type JobStatus, type Job } from "../lib/types";
 import Card from 'react-bootstrap/Card';
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthProvider";
+import { useTheme } from "../utils/useTheme";
+import { STATUS_LABELS, STATUS_BADGE_LIGHT, STATUS_BADGE_DARK, STATUS_BORDER } from "../utils/statuses";
 
-type Job = {
-  id: string;
-  company: string;
-  role: string;
-  jobDescription: string;
-  notes: string;
-  status: JobStatus;
-  createdAt: string;
-};
 
 function fromRow(row: Record<string, unknown>): Job {
   return {
@@ -30,49 +21,9 @@ function fromRow(row: Record<string, unknown>): Job {
   };
 }
 
-const STATUS_LABELS: Record<JobStatus, string> = {
-  applied: "Applied",
-  tech_test: "Tech test",
-  psychometric_test: "Psychometric test",
-  call_screening: "Call screening",
-  one_way: "One way",
-  interview: "Interview",
-  rejected: "Rejected",
-};
-
-const STATUS_BADGE_LIGHT: Record<JobStatus, string> = {
-  applied: "bg-blue-100 text-blue-800",
-  tech_test: "bg-purple-100 text-purple-800",
-  psychometric_test: "bg-violet-100 text-violet-800",
-  call_screening: "bg-yellow-100 text-yellow-800",
-  one_way: "bg-orange-100 text-orange-800",
-  interview: "bg-green-100 text-green-800",
-  rejected: "bg-red-100 text-red-800",
-};
-
-const STATUS_BADGE_DARK: Record<JobStatus, string> = {
-  applied: "bg-blue-900/60 text-blue-300",
-  tech_test: "bg-purple-900/60 text-purple-300",
-  psychometric_test: "bg-violet-900/60 text-violet-300",
-  call_screening: "bg-yellow-900/60 text-yellow-300",
-  one_way: "bg-orange-900/60 text-orange-300",
-  interview: "bg-green-900/60 text-green-300",
-  rejected: "bg-red-900/60 text-red-300",
-};
-
-const STATUS_BORDER: Record<JobStatus, string> = {
-  applied: "border-l-blue-400",
-  tech_test: "border-l-purple-400",
-  psychometric_test: "border-l-violet-400",
-  call_screening: "border-l-yellow-400",
-  one_way: "border-l-orange-400",
-  interview: "border-l-green-400",
-  rejected: "border-l-red-400",
-};
-
 export default function Dashboard() {
   const { user } = useAuth();
-  const [isDark, setIsDark] = useState(() => themeIsDark());
+  const { isDark } = useTheme();
   const [modalOpen, setModalOpen] = useState(false);
   const [expandedJob, setExpandedJob] = useState<Job | null>(null);
   const [editMode, setEditMode] = useState(false);
@@ -100,15 +51,6 @@ export default function Dashboard() {
         setLoading(false);
       });
   }, [user]);
-
-  useEffect(() => {
-    function onTheme(e: Event) {
-      try { setIsDark(!!(e as CustomEvent).detail); }
-      catch { setIsDark(themeIsDark()); }
-    }
-    window.addEventListener("themechange", onTheme as EventListener);
-    return () => window.removeEventListener("themechange", onTheme as EventListener);
-  }, []);
 
   useEffect(() => {
     if (expandedJob) {
@@ -458,8 +400,6 @@ export default function Dashboard() {
         onClose={() => setModalOpen(false)}
         onAdd={handleAdd}
         isDark={isDark}
-        STATUS={STATUS}
-        STATUS_LABELS={STATUS_LABELS}
       />
     </div>
   );

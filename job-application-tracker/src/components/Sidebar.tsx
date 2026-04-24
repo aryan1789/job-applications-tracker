@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { CgSidebarOpen } from 'react-icons/cg'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthProvider'
-import { isDark as themeIsDark, setDark as setThemeDark } from '../lib/theme'
+import { setDark as setThemeDark } from '../lib/theme'
 import trackerIcon from '../assets/2936630.png'
+import { useTheme } from '../utils/useTheme'
 
 type Props = {
   open?: boolean
@@ -21,7 +22,7 @@ function getInitial(user?: { email?: string; user_metadata?: { full_name?: strin
 export default function Sidebar({ open = false, collapsed = false, onClose, onToggleCollapse }: Props) {
   const { user, signOut } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [isDark, setIsDark] = useState(() => themeIsDark())
+  const { isDark, setIsDark } = useTheme()
   const menuRef = useRef<HTMLDivElement | null>(null)
   const location = useLocation()
 
@@ -39,18 +40,6 @@ export default function Sidebar({ open = false, collapsed = false, onClose, onTo
     }
     document.addEventListener('click', handleClickOutside)
     return () => document.removeEventListener('click', handleClickOutside)
-  }, [])
-
-  useEffect(() => {
-    function onTheme(e: Event) {
-      try {
-        setIsDark(!!(e as CustomEvent).detail)
-      } catch {
-        setIsDark(themeIsDark())
-      }
-    }
-    window.addEventListener('themechange', onTheme as EventListener)
-    return () => window.removeEventListener('themechange', onTheme as EventListener)
   }, [])
 
   useEffect(() => { setThemeDark(isDark) }, [isDark])

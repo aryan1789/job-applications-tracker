@@ -1,8 +1,8 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import Sidebar from './Sidebar'
-import { isDark as themeIsDark } from '../lib/theme'
 import { CgSidebarOpen } from 'react-icons/cg'
 import { IoMdNotifications, IoMdNotificationsOutline } from 'react-icons/io'
+import { useTheme } from '../utils/useTheme'
 
 type Props = {
   children: ReactNode
@@ -11,19 +11,7 @@ type Props = {
 export default function Layout({ children }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
-  const [isDark, setIsDark] = useState(() => themeIsDark())
-
-  useEffect(() => {
-    function onTheme(e: Event) {
-      try {
-        setIsDark(!!(e as CustomEvent).detail)
-      } catch {
-        setIsDark(themeIsDark())
-      }
-    }
-    window.addEventListener('themechange', onTheme as EventListener)
-    return () => window.removeEventListener('themechange', onTheme as EventListener)
-  }, [])
+  const { isDark } = useTheme()
 
   return (
     <div className={`min-h-screen ${isDark ? 'bg-slate-900 text-slate-100' : 'bg-slate-100 text-slate-950'}`}>

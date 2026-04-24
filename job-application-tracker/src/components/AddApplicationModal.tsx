@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import type { JobStatus } from "../lib/types";
+import { STATUS } from "../lib/types";
+import { STATUS_LABELS } from "../utils/statuses";
 
 interface Props {
   open: boolean;
@@ -12,8 +14,6 @@ interface Props {
     status: JobStatus;
   }) => void;
   isDark: boolean;
-  STATUS: readonly JobStatus[];
-  STATUS_LABELS: Record<JobStatus, string>;
 }
 
 export default function AddApplicationModal({
@@ -21,8 +21,6 @@ export default function AddApplicationModal({
   onClose,
   onAdd,
   isDark,
-  STATUS,
-  STATUS_LABELS,
 }: Props) {
   const emptyForm = {
     company: "",
