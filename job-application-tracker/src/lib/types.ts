@@ -19,3 +19,11 @@ export type Job = {
   status: JobStatus;
   createdAt: string;
 };
+
+export type ApplicationPanelProps = {
+  job: Job | null
+  isDark: boolean
+  onClose: () => void
+  onJobPatched: (id: string, patch: Partial<Job>) => void
+  onJobDeleted: (id: string) => void
+}
