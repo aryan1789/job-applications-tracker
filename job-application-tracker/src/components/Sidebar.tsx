@@ -84,10 +84,6 @@ export default function Sidebar({ open = false, collapsed = false, onClose, onTo
             <Link to="/dashboard" className={`${navItem} ${isActive('/dashboard') ? activeClass : ''}`}>Dashboard</Link>
             <Link to="/analytics" className={`${navItem} ${isActive('/analytics') ? activeClass : ''}`}>Analytics</Link>
           </nav>
-
-          <div className={`mt-6 border-t px-3 pt-4 ${isDark ? 'border-slate-700/50' : 'border-slate-400'}`}>
-            <Link to="/settings" className={`${navItem} ${isActive('/settings') ? activeClass : ''}`}>Settings</Link>
-          </div>
         </div>
 
         <div className={`border-t ${isDark ? 'border-slate-700/50' : 'border-slate-400'}`} ref={menuRef}>
@@ -106,7 +102,6 @@ export default function Sidebar({ open = false, collapsed = false, onClose, onTo
               </div>
 
               <Link to="/profile" className={`block ${menuItem}`}>Profile</Link>
-              <button className={menuItem}>Settings</button>
 
               <div className={`border-t ${isDark ? 'border-slate-700' : 'border-slate-200'}`} />
 
