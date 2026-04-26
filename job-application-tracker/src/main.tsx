@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import App from './App.tsx'
+import App, { ProtectedRoute } from './App.tsx'
 import { AuthProvider } from './contexts/AuthProvider.tsx'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Login from './pages/Login'
@@ -17,11 +17,13 @@ createRoot(document.getElementById('root')!).render(
       <AuthProvider>
         <Routes>
           <Route path="/" element={<App />} />
-          <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-          <Route path="/profile" element={<Layout><Profile /></Layout>} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/analytics" element={<Layout><Analytics /></Layout>} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+            <Route path="/profile" element={<Layout><Profile /></Layout>} />
+            <Route path="/analytics" element={<Layout><Analytics /></Layout>} />
+          </Route>
         </Routes>
       </AuthProvider>
     </BrowserRouter>
