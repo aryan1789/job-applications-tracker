@@ -49,6 +49,7 @@ export default function ApplicationPanel({ job, isDark, onClose, onJobPatched, o
     if (patch.jobDescription !== undefined) dbPatch.description = patch.jobDescription
     if (patch.notes !== undefined) dbPatch.notes = patch.notes
     if (patch.status !== undefined) dbPatch.status = patch.status
+    if (patch.createdAt !== undefined) dbPatch.created_at = patch.createdAt
     const { error } = await supabase.from("applications").update(dbPatch).eq("id", job.id)
     if (!error) onJobPatched(job.id, patch)
   }
@@ -89,6 +90,7 @@ export default function ApplicationPanel({ job, isDark, onClose, onJobPatched, o
     if (!editingStepDate) { setEditingStepId(null); return }
     const newDate = new Date(`${editingStepDate}T12:00:00`).toISOString()
     await updateStepDate(stepId, newDate)
+    if (steps[0]?.id === stepId) await patchJob({ createdAt: newDate })
     setEditingStepId(null)
   }
 

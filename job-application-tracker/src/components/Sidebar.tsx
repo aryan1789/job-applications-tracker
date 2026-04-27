@@ -13,14 +13,16 @@ type Props = {
   onToggleCollapse?: () => void
 }
 
-function getInitial(user?: { email?: string; user_metadata?: { full_name?: string } } | null) {
-  const name = user?.user_metadata?.full_name ?? user?.email
-  if (!name) return '?'
-  return name.trim()[0].toUpperCase()
+function getInitial(name?: string | null, email?: string | null) {
+  const str = name ?? email
+  if (!str) return '?'
+  return str.trim()[0].toUpperCase()
 }
 
 export default function Sidebar({ open = false, collapsed = false, onClose, onToggleCollapse }: Props) {
-  const { user, signOut } = useAuth()
+  const { user, profile, signOut } = useAuth()
+  const displayName = profile?.full_name ?? user?.user_metadata?.full_name ?? user?.email ?? 'Guest'
+  const avatarUrl = profile?.avatar_url ?? user?.user_metadata?.avatar_url ?? null
   const [menuOpen, setMenuOpen] = useState(false)
   const { isDark, setIsDark } = useTheme()
   const menuRef = useRef<HTMLDivElement | null>(null)
@@ -90,14 +92,13 @@ export default function Sidebar({ open = false, collapsed = false, onClose, onTo
           {menuOpen && (
             <div className={`mx-2 mb-1 rounded-lg border shadow-lg overflow-hidden ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
               <div className={`flex items-center gap-3 px-3 py-3 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
-                {user?.user_metadata?.avatar_url ? (
-                <img src={user.user_metadata.avatar_url} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
-              ) : (
-                <div className={`h-8 w-8 text-sm shrink-0 ${avatar}`}>{getInitial(user)}</div>
-              )}
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
+                ) : (
+                  <div className={`h-8 w-8 text-sm shrink-0 ${avatar}`}>{getInitial(profile?.full_name, user?.email)}</div>
+                )}
                 <div>
-                  <p className="text-sm font-medium">{user?.user_metadata?.full_name ?? user?.email ?? 'Guest'}</p>
-                  <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Member</p>
+                  <p className="text-sm font-medium">{displayName}</p>
                 </div>
               </div>
 
@@ -115,14 +116,13 @@ export default function Sidebar({ open = false, collapsed = false, onClose, onTo
             onClick={() => setMenuOpen(v => !v)}
             className={`w-full flex items-center gap-3 px-4 py-4 transition-colors ${hover}`}
           >
-            {user?.user_metadata?.avatar_url ? (
-              <img src={user.user_metadata.avatar_url} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
             ) : (
-              <div className={`h-9 w-9 shrink-0 ${avatar}`}>{getInitial(user)}</div>
+              <div className={`h-9 w-9 shrink-0 ${avatar}`}>{getInitial(profile?.full_name, user?.email)}</div>
             )}
             <div className="text-left">
-              <p className="text-sm font-medium">{user?.user_metadata?.full_name ?? user?.email ?? 'Guest'}</p>
-              <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>Member</p>
+              <p className="text-sm font-medium">{displayName}</p>
             </div>
           </button>
         </div>

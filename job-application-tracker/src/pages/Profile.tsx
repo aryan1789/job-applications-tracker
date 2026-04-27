@@ -5,7 +5,7 @@ import { FiX } from 'react-icons/fi'
 import { useTheme } from '../utils/useTheme'
 
 export default function Profile() {
-  const { user } = useAuth()
+  const { user, refreshProfile } = useAuth()
   const { isDark } = useTheme()
   const [name, setName] = useState('')
   const [bio, setBio] = useState('')
@@ -17,11 +17,19 @@ export default function Profile() {
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Load from profiles table on mount; fall back to user_metadata for first-time users
   useEffect(() => {
     if (!user) return
-    setName(user.user_metadata?.full_name ?? '')
-    setBio(user.user_metadata?.bio ?? '')
-    setAvatarUrl(user.user_metadata?.avatar_url ?? null)
+    supabase
+      .from('profiles')
+      .select('full_name, bio, avatar_url')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => {
+        setName(data?.full_name ?? user.user_metadata?.full_name ?? '')
+        setBio(data?.bio ?? user.user_metadata?.bio ?? '')
+        setAvatarUrl(data?.avatar_url ?? user.user_metadata?.avatar_url ?? null)
+      })
   }, [user])
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -29,6 +37,27 @@ export default function Profile() {
     if (!file) return
     setAvatarFile(file)
     setAvatarPreview(URL.createObjectURL(file))
+  }
+
+  async function uploadAvatar(file: File): Promise<string> {
+    // Delete all existing files for this user first to avoid accumulation
+    const { data: existing } = await supabase.storage.from('avatars').list(user!.id)
+    if (existing?.length) {
+      await supabase.storage
+        .from('avatars')
+        .remove(existing.map(f => `${user!.id}/${f.name}`))
+    }
+
+    // Upload with a consistent filename — content-type handles format, not the name
+    const path = `${user!.id}/avatar`
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(path, file, { contentType: file.type, upsert: true })
+
+    if (uploadError) throw new Error(uploadError.message)
+
+    const { data } = supabase.storage.from('avatars').getPublicUrl(path)
+    return `${data.publicUrl}?t=${Date.now()}`
   }
 
   async function handleSave() {
@@ -39,37 +68,33 @@ export default function Profile() {
 
     try {
       let newAvatarUrl = avatarUrl
+      if (avatarFile) newAvatarUrl = await uploadAvatar(avatarFile)
 
-      if (avatarFile) {
-        const ext = avatarFile.name.split('.').pop()
-        const path = `${user.id}/avatar.${ext}`
-        const { error: uploadError } = await supabase.storage
-          .from('avatars')
-          .upload(path, avatarFile, { upsert: true })
-
-        if (uploadError) throw new Error(uploadError.message)
-
-        const { data } = supabase.storage.from('avatars').getPublicUrl(path)
-        newAvatarUrl = `${data.publicUrl}?t=${Date.now()}`
+      const profileData = {
+        id: user.id,
+        full_name: name.trim(),
+        bio: bio.trim(),
+        avatar_url: newAvatarUrl,
+        updated_at: new Date().toISOString(),
       }
 
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: {
-          full_name: name.trim(),
-          bio: bio.trim(),
-          avatar_url: newAvatarUrl,
-        },
-      })
+      // Persist to profiles table (source of truth)
+      const { error: dbError } = await supabase.from('profiles').upsert(profileData)
+      if (dbError) throw new Error(dbError.message)
 
-      if (updateError) throw new Error(updateError.message)
+      // Keep user_metadata in sync so the sidebar reflects the latest values
+      await supabase.auth.updateUser({
+        data: { full_name: name.trim(), bio: bio.trim(), avatar_url: newAvatarUrl },
+      })
 
       setAvatarUrl(newAvatarUrl)
       setAvatarFile(null)
       setAvatarPreview(null)
+      await refreshProfile()
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
-    } catch (err: any) {
-      setError(err.message ?? String(err))
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err))
     } finally {
       setSaving(false)
     }
@@ -135,9 +160,7 @@ export default function Profile() {
 
         {/* Name */}
         <div className="flex flex-col gap-1.5">
-          <label className={`text-xs font-semibold uppercase tracking-wider ${label}`}>
-            Name
-          </label>
+          <label className={`text-xs font-semibold uppercase tracking-wider ${label}`}>Name</label>
           <input
             type="text"
             value={name}
@@ -149,9 +172,7 @@ export default function Profile() {
 
         {/* Email — read only */}
         <div className="flex flex-col gap-1.5">
-          <label className={`text-xs font-semibold uppercase tracking-wider ${label}`}>
-            Email
-          </label>
+          <label className={`text-xs font-semibold uppercase tracking-wider ${label}`}>Email</label>
           <div className={`text-sm px-3 py-2 rounded-lg border ${isDark ? 'border-slate-700 text-slate-400' : 'border-slate-200 text-slate-500'}`}>
             {user?.email ?? '—'}
           </div>
@@ -159,9 +180,7 @@ export default function Profile() {
 
         {/* Bio */}
         <div className="flex flex-col gap-1.5">
-          <label className={`text-xs font-semibold uppercase tracking-wider ${label}`}>
-            Bio
-          </label>
+          <label className={`text-xs font-semibold uppercase tracking-wider ${label}`}>Bio</label>
           <textarea
             rows={3}
             value={bio}
