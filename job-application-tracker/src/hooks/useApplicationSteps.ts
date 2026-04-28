@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { stepFromRow, type ApplicationStep } from '../lib/mappers'
-import type { JobStatus } from '../lib/types'
+import { stepFromRow } from '../lib/mappers'
+import { type ApplicationStep, type JobStatus } from '../lib/types'
 
 export function useApplicationSteps(jobId?: string, createdAt?: string) {
   const [steps, setSteps] = useState<ApplicationStep[]>([])
@@ -25,7 +25,7 @@ export function useApplicationSteps(jobId?: string, createdAt?: string) {
       if (createdAt) {
         const createdMs = new Date(createdAt).getTime()
         const hasInitialStep = fetched.some(
-          s => Math.abs(new Date(s.stepDate).getTime() - createdMs) < 5 * 60 * 1000
+          s => s.stepDate !== null && Math.abs(new Date(s.stepDate).getTime() - createdMs) < 5 * 60 * 1000
         )
         if (!hasInitialStep) {
           const { data: seeded } = await supabase

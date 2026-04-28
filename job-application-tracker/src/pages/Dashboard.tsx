@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { BiSortUp, BiSortDown } from "react-icons/bi";
+import { FiUpload } from "react-icons/fi";
 import AddApplicationModal from "../components/AddApplicationModal";
 import ApplicationPanel from "../components/ApplicationPanel";
+import ImportModal from "../components/ImportModal";
 import JobCard from "../components/JobCard";
-import { STATUS, type JobStatus, type Job } from "../lib/types";
+import { STATUS, STATUS_LABELS, STATUS_BADGE_LIGHT, STATUS_BADGE_DARK, type JobStatus, type Job } from "../lib/types";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthProvider";
 import { useTheme } from "../utils/useTheme";
-import { STATUS_LABELS, STATUS_BADGE_LIGHT, STATUS_BADGE_DARK } from "../utils/statuses";
 
 
 function supabaseDBToJob(row: Record<string, unknown>): Job {
@@ -67,6 +68,7 @@ export default function Dashboard() {
   const [sortBy, setSortBy] = useState<SortBy>("date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [sortOpen, setSortOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
 
   const filteredJobs = sortJobs(filterJobs(jobs, searchQuery, statusFilter), sortBy, sortDir);
@@ -135,6 +137,16 @@ export default function Dashboard() {
     setModalOpen(false);
   }
 
+  async function reloadJobs() {
+    if (!user) return;
+    const { data } = await supabase
+      .from("applications")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+    setJobs((data ?? []).map(supabaseDBToJob));
+  }
+
   function handleJobPatched(id: string, patch: Partial<Job>) {
     setJobs(prev => prev.map(j => j.id === id ? { ...j, ...patch } : j));
     setExpandedJob(prev => prev?.id === id ? { ...prev, ...patch } : prev);
@@ -147,10 +159,18 @@ export default function Dashboard() {
 
   return (
     <div className={`px-6 py-4 text-left ${isDark ? "text-slate-100" : "text-slate-950"}`}>
-      <header className="flex items-center gap-3 mb-6">
+      <header className="flex items-center justify-between mb-6">
         <h1 className={`!m-0 text-2xl font-semibold tracking-tight !leading-tight ${isDark ? "!text-slate-100" : "!text-slate-950"}`}>
           Applications
         </h1>
+        <button
+          onClick={() => setImportOpen(true)}
+          title="Import from spreadsheet"
+          className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${isDark ? "border-slate-600 text-slate-400 hover:text-slate-100 hover:bg-slate-700" : "border-slate-300 text-slate-500 hover:text-slate-800 hover:bg-slate-100"}`}
+        >
+          <FiUpload size={13} />
+          Import spreadsheet
+        </button>
       </header>
 
       {error && <div className="mb-4 text-sm text-red-500">{error}</div>}
@@ -220,8 +240,15 @@ export default function Dashboard() {
       {loading ? (
         <div className={isDark ? "text-slate-400" : "text-slate-500"}>Loading…</div>
       ) : jobs.length === 0 ? (
-        <div className={isDark ? "text-slate-400" : "text-slate-500"}>
-          No applications yet. Add using the + button.
+        <div className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+          No applications yet. Add using the + button or{" "}
+          <button
+            onClick={() => setImportOpen(true)}
+            className="underline underline-offset-2 hover:opacity-70 transition-opacity"
+          >
+            import from a spreadsheet
+          </button>
+          .
         </div>
       ) : filteredJobs.length === 0 ? (
         <div className={isDark ? "text-slate-400" : "text-slate-500"}>
@@ -256,6 +283,14 @@ export default function Dashboard() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onAdd={handleAdd}
+        isDark={isDark}
+      />
+
+      <ImportModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={() => reloadJobs()}
+        userId={user?.id ?? ""}
         isDark={isDark}
       />
     </div>

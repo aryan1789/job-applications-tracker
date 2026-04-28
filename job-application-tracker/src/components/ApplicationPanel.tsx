@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react"
 import { FiEdit2, FiTrash2 } from "react-icons/fi"
 import { supabase } from "../lib/supabase"
-import { STATUS, type Job, type JobStatus } from "../lib/types"
-import { STATUS_LABELS, STATUS_BADGE_LIGHT, STATUS_BADGE_DARK, STATUS_COLORS } from "../utils/statuses"
+import {
+  STATUS,
+  STATUS_LABELS, STATUS_BADGE_LIGHT, STATUS_BADGE_DARK, STATUS_COLORS,
+  type Job, type JobStatus, type ApplicationPanelProps,
+} from "../lib/types"
 import { useApplicationSteps } from "../hooks/useApplicationSteps"
-import type { ApplicationPanelProps } from '../lib/types'
 
 export default function ApplicationPanel({ job, isDark, onClose, onJobPatched, onJobDeleted }: ApplicationPanelProps) {
   const [editMode, setEditMode] = useState(false)
@@ -334,10 +336,10 @@ export default function ApplicationPanel({ job, isDark, onClose, onJobPatched, o
                                           Edit status
                                         </button>
                                         <button
-                                          onClick={() => { setEditingStepId(step.id); setEditingStepDate(new Date(step.stepDate).toLocaleDateString("en-CA")); setStepMenuOpen(null) }}
+                                          onClick={() => { setEditingStepId(step.id); setEditingStepDate(step.stepDate ? new Date(step.stepDate).toLocaleDateString("en-CA") : new Date().toLocaleDateString("en-CA")); setStepMenuOpen(null) }}
                                           className={`w-full text-left px-3 py-2 text-xs ${isDark ? "hover:bg-slate-700 text-slate-300" : "hover:bg-slate-50 text-slate-700"}`}
                                         >
-                                          Edit date
+                                          {step.stepDate ? "Edit date" : "Add date"}
                                         </button>
                                         <div className={`border-t ${isDark ? "border-slate-700" : "border-slate-200"}`} />
                                         <button
@@ -365,10 +367,12 @@ export default function ApplicationPanel({ job, isDark, onClose, onJobPatched, o
                                   />
                                 ) : (
                                   <button
-                                    onClick={() => { setEditingStepId(step.id); setEditingStepDate(new Date(step.stepDate).toLocaleDateString("en-CA")) }}
+                                    onClick={() => { setEditingStepId(step.id); setEditingStepDate(step.stepDate ? new Date(step.stepDate).toLocaleDateString("en-CA") : new Date().toLocaleDateString("en-CA")) }}
                                     className={`mt-0.5 text-xs text-left hover:underline ${isDark ? "text-slate-500 hover:text-slate-300" : "text-slate-400 hover:text-slate-600"}`}
                                   >
-                                    {new Date(step.stepDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                                    {step.stepDate
+                                      ? new Date(step.stepDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+                                      : <span className={isDark ? "text-slate-600" : "text-slate-300"}>No date — click to add</span>}
                                   </button>
                                 )}
                               </div>

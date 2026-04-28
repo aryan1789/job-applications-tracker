@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import type { JobStatus } from "../lib/types";
-import { STATUS } from "../lib/types";
-import { STATUS_LABELS } from "../utils/statuses";
+import { STATUS, STATUS_LABELS, type JobStatus } from "../lib/types";
 
 interface Props {
   open: boolean;

@@ -2,9 +2,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthProvider'
 import { useTheme } from '../utils/useTheme'
-import type { JobStatus, Job } from '../lib/types'
-import {  PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid,} from 'recharts'
-import { STATUS_LABELS, STATUS_COLORS } from '../utils/statuses'
+import { STATUS_LABELS, STATUS_COLORS, type JobStatus, type Job } from '../lib/types'
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts'
 
 function buildPieData(jobs: Job[]) {
   const counts: Partial<Record<JobStatus, number>> = {}

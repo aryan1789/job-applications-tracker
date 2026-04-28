@@ -1,6 +1,5 @@
 import Card from "react-bootstrap/Card"
-import { type Job } from "../lib/types"
-import { STATUS_LABELS, STATUS_BADGE_LIGHT, STATUS_BADGE_DARK, STATUS_BORDER } from "../utils/statuses"
+import { STATUS_LABELS, STATUS_BADGE_LIGHT, STATUS_BADGE_DARK, STATUS_BORDER, type Job } from "../lib/types"
 
 export default function JobCard({ job, onClick, isDark }: { job: Job; onClick: () => void; isDark: boolean }) {
   const badge = isDark ? STATUS_BADGE_DARK[job.status] : STATUS_BADGE_LIGHT[job.status]
