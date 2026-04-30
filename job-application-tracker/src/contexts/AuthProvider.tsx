@@ -13,6 +13,7 @@ type AuthState = {
   session: Session | null;
   loading: boolean;
   profile: UserProfile | null;
+  providerToken: string | null;
   refreshProfile: () => Promise<void>;
   signUp: (email: string, pass: string) => Promise<any>;
   signIn: (email: string, pass: string) => Promise<any>;
@@ -27,6 +28,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [providerToken, setProviderToken] = useState<string | null>(
+    () => localStorage.getItem('gmail_provider_token')
+  );
 
   async function fetchProfile(userId: string) {
     try {
@@ -61,13 +65,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     init();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, sessionPayload) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, sessionPayload) => {
       const s = sessionPayload ?? null;
       setSession(s as Session | null);
       const u = (s as Session | null)?.user ?? null;
       setUser(u);
       if (u) fetchProfile(u.id);
       else setProfile(null);
+
+      // Capture the Google access token immediately after OAuth redirect
+      if (event === 'SIGNED_IN' && sessionPayload?.provider_token) {
+        setProviderToken(sessionPayload.provider_token);
+        localStorage.setItem('gmail_provider_token', sessionPayload.provider_token);
+      }
+      if (event === 'SIGNED_OUT') {
+        setProviderToken(null);
+        localStorage.removeItem('gmail_provider_token');
+      }
     });
 
     const subscription = authListener?.subscription;
@@ -85,10 +99,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     session,
     loading,
     profile,
+    providerToken,
     refreshProfile,
     signUp: (email, pass) => supabase.auth.signUp({ email, password: pass }),
     signIn: (email, pass) => supabase.auth.signInWithPassword({ email, password: pass }),
-    signInWithGoogle: () => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } }),
+    signInWithGoogle: () =>
+      supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+          scopes: 'https://www.googleapis.com/auth/gmail.readonly',
+          queryParams: { access_type: 'offline', prompt: 'consent' },
+        },
+      }),
     signOut: () => supabase.auth.signOut(),
   };
 
