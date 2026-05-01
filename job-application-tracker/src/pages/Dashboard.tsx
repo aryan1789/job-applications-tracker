@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { BiSortUp, BiSortDown } from "react-icons/bi";
 import { FiUpload } from "react-icons/fi";
+import { MdOutlineMarkEmailRead } from "react-icons/md";
 import AddApplicationModal from "../components/AddApplicationModal";
 import ApplicationPanel from "../components/ApplicationPanel";
 import ImportModal from "../components/ImportModal";
@@ -8,6 +9,7 @@ import JobCard from "../components/JobCard";
 import { STATUS, STATUS_LABELS, STATUS_BADGE_LIGHT, STATUS_BADGE_DARK, type JobStatus, type Job } from "../lib/types";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthProvider";
+import { useNotifications } from "../contexts/NotificationsContext";
 import { useTheme } from "../utils/useTheme";
 
 
@@ -56,7 +58,8 @@ function sortJobs(jobs: Job[], by: SortBy, dir: SortDir): Job[] {
 }
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, session, providerToken } = useAuth();
+  const { addSuggestions, refreshTrigger } = useNotifications();
   const { isDark } = useTheme();
   const [modalOpen, setModalOpen] = useState(false);
   const [expandedJob, setExpandedJob] = useState<Job | null>(null);
@@ -69,6 +72,7 @@ export default function Dashboard() {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [sortOpen, setSortOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [syncLoading, setSyncLoading] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
 
   const filteredJobs = sortJobs(filterJobs(jobs, searchQuery, statusFilter), sortBy, sortDir);
@@ -157,20 +161,60 @@ export default function Dashboard() {
     setExpandedJob(null);
   }
 
+  useEffect(() => {
+    if (refreshTrigger > 0) reloadJobs();
+  }, [refreshTrigger]);
+
+  async function handleSync() {
+    if (!providerToken) {
+      setError("Sign in with Google to use Gmail sync.");
+      return;
+    }
+    setSyncLoading(true);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("sync-emails", {
+        body: { provider_token: providerToken },
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (fnError) throw fnError;
+      if (data?.error === 'gmail_token_expired') {
+        localStorage.removeItem('gmail_provider_token');
+        setError("Gmail access expired. Please sign out and sign back in with Google.");
+        return;
+      }
+      addSuggestions(data.updates ?? []);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSyncLoading(false);
+    }
+  }
+
   return (
     <div className={`px-6 py-4 text-left ${isDark ? "text-slate-100" : "text-slate-950"}`}>
       <header className="flex items-center justify-between mb-6">
         <h1 className={`!m-0 text-2xl font-semibold tracking-tight !leading-tight ${isDark ? "!text-slate-100" : "!text-slate-950"}`}>
           Applications
         </h1>
-        <button
-          onClick={() => setImportOpen(true)}
-          title="Import from spreadsheet"
-          className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${isDark ? "border-slate-600 text-slate-400 hover:text-slate-100 hover:bg-slate-700" : "border-slate-300 text-slate-500 hover:text-slate-800 hover:bg-slate-100"}`}
-        >
-          <FiUpload size={13} />
-          Import spreadsheet
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleSync}
+            disabled={syncLoading}
+            title="Sync from Gmail"
+            className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors disabled:opacity-50 ${isDark ? "border-slate-600 text-slate-400 hover:text-slate-100 hover:bg-slate-700" : "border-slate-300 text-slate-500 hover:text-slate-800 hover:bg-slate-100"}`}
+          >
+            <MdOutlineMarkEmailRead size={14} />
+            {syncLoading ? "Syncing…" : "Sync emails"}
+          </button>
+          <button
+            onClick={() => setImportOpen(true)}
+            title="Import from spreadsheet"
+            className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${isDark ? "border-slate-600 text-slate-400 hover:text-slate-100 hover:bg-slate-700" : "border-slate-300 text-slate-500 hover:text-slate-800 hover:bg-slate-100"}`}
+          >
+            <FiUpload size={13} />
+            Import spreadsheet
+          </button>
+        </div>
       </header>
 
       {error && <div className="mb-4 text-sm text-red-500">{error}</div>}
@@ -293,6 +337,7 @@ export default function Dashboard() {
         userId={user?.id ?? ""}
         isDark={isDark}
       />
+
     </div>
   );
 }

@@ -102,3 +102,11 @@ export type ApplicationPanelProps = {
   onJobPatched: (id: string, patch: Partial<Job>) => void;
   onJobDeleted: (id: string) => void;
 };
+
+export type SyncSuggestion = {
+  id: string;
+  company: string;
+  role: string;
+  old_status: string;
+  new_status: string;
+};

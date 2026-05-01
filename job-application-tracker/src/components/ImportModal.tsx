@@ -1,7 +1,7 @@
 import { useRef, useState } from "react"
 import * as XLSX from "xlsx"
 import { supabase } from "../lib/supabase"
-import { STATUS_LABELS, type JobStatus, type ImportRow, type ImportResult, type ImportStage } from "../lib/types"
+import { type JobStatus, type ImportRow, type ImportResult, type ImportStage } from "../lib/types"
 
 const COLUMN_ALIASES = {
   role:        ["job name", "role", "position", "title"],
@@ -41,25 +41,27 @@ function parseRows(raw: Record<string, unknown>[]): { rows: ImportRow[], skipped
   const skipped: string[] = []
 
   raw.forEach((row, i) => {
-    const role    = roleCol    ? String(row[roleCol] ?? "").trim()    : ""
-    const company = companyCol ? String(row[companyCol] ?? "").trim() : ""
+    const role       = roleCol        ? String(row[roleCol] ?? "").trim()        : ""
+    const company    = companyCol     ? String(row[companyCol] ?? "").trim()     : ""
+    const rawStatus  = statusCol      ? String(row[statusCol] ?? "").trim()      : ""
+    const rawDate    = appliedDateCol ? row[appliedDateCol]                       : null
 
-    if (!role || !company) {
-      skipped.push(`Row ${i + 2}: missing ${!role ? "role" : "company"}`)
+    const hasDate = rawDate !== null && rawDate !== undefined && String(rawDate).trim() !== ""
+    const filledCount = [role, company, rawStatus, hasDate ? "x" : ""].filter(v => v !== "").length
+
+    if (filledCount < 2) {
+      skipped.push(`Row ${i + 2}: not enough data`)
       return
     }
 
-    const status: JobStatus = statusCol && row[statusCol]
-      ? normaliseStatus(String(row[statusCol]))
-      : "applied"
+    const status: JobStatus = rawStatus ? normaliseStatus(rawStatus) : "applied"
 
     let appliedDate: string | null = null
-    if (appliedDateCol && row[appliedDateCol]) {
-      const raw = row[appliedDateCol]
-      if (raw instanceof Date && !isNaN(raw.getTime())) {
-        appliedDate = raw.toISOString()
-      } else if (typeof raw === "string" || typeof raw === "number") {
-        const parsed = new Date(raw)
+    if (hasDate) {
+      if (rawDate instanceof Date && !isNaN(rawDate.getTime())) {
+        appliedDate = rawDate.toISOString()
+      } else if (typeof rawDate === "string" || typeof rawDate === "number") {
+        const parsed = new Date(rawDate)
         if (!isNaN(parsed.getTime())) appliedDate = parsed.toISOString()
       }
     }
@@ -106,17 +108,19 @@ export default function ImportModal({ open, onClose, onImported, userId, isDark 
       const sheet = workbook.Sheets[workbook.SheetNames[0]]
 
       const allRows = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as unknown[][]
-      const allAliases = [
-        ...COLUMN_ALIASES.role,
-        ...COLUMN_ALIASES.company,
-        ...COLUMN_ALIASES.status,
-        ...COLUMN_ALIASES.appliedDate,
+      const columnGroups = [
+        COLUMN_ALIASES.role,
+        COLUMN_ALIASES.company,
+        COLUMN_ALIASES.status,
+        COLUMN_ALIASES.appliedDate,
       ]
       const headerRowIdx = allRows.findIndex(row =>
-        row.some(cell =>
-          typeof cell === "string" &&
-          allAliases.some(alias => cell.toLowerCase().trim().includes(alias.toLowerCase()))
-        )
+        columnGroups.filter(aliases =>
+          (row as unknown[]).some(cell =>
+            typeof cell === "string" &&
+            aliases.some(alias => cell.toLowerCase().trim().includes(alias.toLowerCase()))
+          )
+        ).length >= 2
       )
 
       if (headerRowIdx === -1) {
@@ -124,9 +128,31 @@ export default function ImportModal({ open, onClose, onImported, userId, isDark 
         return
       }
 
-      const raw = XLSX.utils.sheet_to_json(sheet, {
-        range: headerRowIdx,
-      }) as Record<string, unknown>[]
+      const headers = allRows[headerRowIdx] as string[]
+      const rCol = findColumn(headers, COLUMN_ALIASES.role)
+      const cCol = findColumn(headers, COLUMN_ALIASES.company)
+      const sCol = findColumn(headers, COLUMN_ALIASES.status)
+      const dCol = findColumn(headers, COLUMN_ALIASES.appliedDate)
+
+      const rIdx = rCol ? headers.indexOf(rCol) : -1
+      const cIdx = cCol ? headers.indexOf(cCol) : -1
+      const sIdx = sCol ? headers.indexOf(sCol) : -1
+      const dIdx = dCol ? headers.indexOf(dCol) : -1
+
+      const hasVal = (row: unknown[], idx: number) =>
+        idx >= 0 && row[idx] !== undefined && row[idx] !== null && String(row[idx]).trim() !== ""
+
+      const raw = allRows
+        .slice(headerRowIdx + 1)
+        .filter(row => {
+          const r = row as unknown[]
+          return hasVal(r, rIdx) || hasVal(r, cIdx) || hasVal(r, sIdx) || hasVal(r, dIdx)
+        })
+        .map(row => {
+          const obj: Record<string, unknown> = {}
+          headers.forEach((col, i) => { if (col) obj[col] = (row as unknown[])[i] })
+          return obj
+        })
 
       if (raw.length === 0) {
         setError("The file appears to be empty.")
@@ -235,37 +261,8 @@ export default function ImportModal({ open, onClose, onImported, userId, isDark 
           <div className="flex flex-col gap-4">
             <p className={`text-sm ${muted}`}>
               Found <span className={`font-semibold ${isDark ? "text-slate-100" : "text-slate-900"}`}>{preview.length}</span> valid row{preview.length !== 1 ? "s" : ""}.
-              {skipped.length > 0 && ` ${skipped.length} will be skipped (missing role or company).`}
+              {skipped.length > 0 && ` ${skipped.length} will be skipped.`}
             </p>
-            <div className={`overflow-x-auto rounded-lg border ${isDark ? "border-slate-700" : "border-slate-200"}`}>
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className={isDark ? "bg-slate-700 text-slate-300" : "bg-slate-100 text-slate-600"}>
-                    <th className="text-left px-3 py-2 font-semibold">Role</th>
-                    <th className="text-left px-3 py-2 font-semibold">Company</th>
-                    <th className="text-left px-3 py-2 font-semibold">Status</th>
-                    <th className="text-left px-3 py-2 font-semibold">Applied date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {preview.slice(0, 5).map((row, i) => (
-                    <tr key={i} className={`border-t ${isDark ? "border-slate-700" : "border-slate-200"}`}>
-                      <td className="px-3 py-2">{row.role}</td>
-                      <td className="px-3 py-2">{row.company}</td>
-                      <td className="px-3 py-2">{STATUS_LABELS[row.status]}</td>
-                      <td className={`px-3 py-2 ${muted}`}>
-                        {row.appliedDate
-                          ? new Date(row.appliedDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
-                          : "—"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {preview.length > 5 && (
-              <p className={`text-xs ${muted}`}>Showing first 5 of {preview.length} rows.</p>
-            )}
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setStage("idle")}
@@ -287,7 +284,7 @@ export default function ImportModal({ open, onClose, onImported, userId, isDark 
           <p className={`text-sm ${muted}`}>Importing…</p>
         )}
 
-=        {stage === "done" && result && (
+        {stage === "done" && result && (
           <div className="flex flex-col gap-4">
             <p className="text-sm">
               <span className="text-green-400 font-semibold">{result.imported} imported</span>
