@@ -80,7 +80,7 @@ export default function Layout({ children }: Props) {
             </button>
 
             {notifOpen && (
-              <div className={`absolute right-0 top-full mt-2 w-80 rounded-xl border shadow-xl z-50 overflow-hidden ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+              <div className={`absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-80 rounded-xl border shadow-xl z-50 overflow-hidden ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
                 <div className={`px-4 py-3 border-b text-sm font-semibold ${isDark ? 'border-slate-700 text-slate-100' : 'border-slate-200 text-slate-800'}`}>
                   Email sync suggestions
                 </div>

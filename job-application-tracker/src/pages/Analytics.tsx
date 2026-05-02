@@ -84,12 +84,12 @@ export default function Analytics() {
   const gridColor = isDark ? '#334155' : '#e2e8f0'
   const axisColor = isDark ? '#64748b' : '#94a3b8'
 
-  if (loading) return <div className={`px-6 py-4 ${muted}`}>Loading…</div>
-  if (error) return <div className="px-6 py-4 text-sm text-red-500">{error}</div>
+  if (loading) return <div className={`px-3 sm:px-6 py-4 ${muted}`}>Loading…</div>
+  if (error) return <div className="px-3 sm:px-6 py-4 text-sm text-red-500">{error}</div>
 
   return (
-    <div className={`px-6 py-4 ${isDark ? 'text-slate-100' : 'text-slate-950'}`}>
-      <h1 className={`text-2xl font-semibold tracking-tight mb-6 ${heading}`}>Analytics</h1>
+    <div className={`px-3 sm:px-6 py-4 ${isDark ? 'text-slate-100' : 'text-slate-950'}`}>
+      <h1 className={`text-xl sm:text-2xl font-semibold tracking-tight mb-6 ${heading}`}>Analytics</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         {[

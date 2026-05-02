@@ -109,4 +109,5 @@ export type SyncSuggestion = {
   role: string;
   old_status: string;
   new_status: string;
+  email_date: string;
 };

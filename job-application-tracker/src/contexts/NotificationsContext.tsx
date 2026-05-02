@@ -25,6 +25,12 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
   async function acceptSuggestion(s: SyncSuggestion) {
     await supabase.from('applications').update({ status: s.new_status }).eq('id', s.id)
+    await supabase.from('application_process').insert({
+      application_id: s.id,
+      step_name: s.new_status,
+      step_date: s.email_date,
+      notes: '',
+    })
     setSuggestions(prev => prev.filter(n => n.id !== s.id))
     setRefreshTrigger(t => t + 1)
   }

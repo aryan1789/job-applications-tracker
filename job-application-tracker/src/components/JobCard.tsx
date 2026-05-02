@@ -12,7 +12,7 @@ export default function JobCard({ job, onClick, isDark }: { job: Job; onClick: (
       onClick={onClick}
       className={`rounded-xl border-l-4 shadow-sm transition-all duration-200 cursor-pointer ${cardBg} ${cardHover} ${border}`}
     >
-      <Card.Body className="px-6 py-5 flex flex-row items-center justify-between gap-6">
+      <Card.Body className="px-4 sm:px-6 py-4 sm:py-5 flex flex-row items-center justify-between gap-3 sm:gap-6">
         <div className="flex flex-col gap-0.5 min-w-0">
           <h3 className={`text-base font-semibold leading-snug !m-0 truncate ${isDark ? "text-slate-100" : "text-slate-900"}`}>
             {job.role || "-"}

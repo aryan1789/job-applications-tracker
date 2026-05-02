@@ -191,9 +191,9 @@ export default function Dashboard() {
   }
 
   return (
-    <div className={`px-6 py-4 text-left ${isDark ? "text-slate-100" : "text-slate-950"}`}>
+    <div className={`px-3 sm:px-6 py-4 text-left ${isDark ? "text-slate-100" : "text-slate-950"}`}>
       <header className="flex items-center justify-between mb-6">
-        <h1 className={`!m-0 text-2xl font-semibold tracking-tight !leading-tight ${isDark ? "!text-slate-100" : "!text-slate-950"}`}>
+        <h1 className={`!m-0 text-xl sm:text-2xl font-semibold tracking-tight !leading-tight ${isDark ? "!text-slate-100" : "!text-slate-950"}`}>
           Applications
         </h1>
         <div className="flex items-center gap-2">
@@ -204,7 +204,7 @@ export default function Dashboard() {
             className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors disabled:opacity-50 ${isDark ? "border-slate-600 text-slate-400 hover:text-slate-100 hover:bg-slate-700" : "border-slate-300 text-slate-500 hover:text-slate-800 hover:bg-slate-100"}`}
           >
             <MdOutlineMarkEmailRead size={14} />
-            {syncLoading ? "Syncing…" : "Sync emails"}
+            <span className="hidden sm:inline">{syncLoading ? "Syncing…" : "Sync emails"}</span>
           </button>
           <button
             onClick={() => setImportOpen(true)}
@@ -212,7 +212,7 @@ export default function Dashboard() {
             className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${isDark ? "border-slate-600 text-slate-400 hover:text-slate-100 hover:bg-slate-700" : "border-slate-300 text-slate-500 hover:text-slate-800 hover:bg-slate-100"}`}
           >
             <FiUpload size={13} />
-            Import spreadsheet
+            <span className="hidden sm:inline">Import spreadsheet</span>
           </button>
         </div>
       </header>
