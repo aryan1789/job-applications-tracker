@@ -1,8 +1,16 @@
-import { Link } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTheme } from '../utils/useTheme'
+import { useAuth } from '../contexts/AuthProvider'
 
 export default function Home() {
   const { isDark } = useTheme()
+  const { user, loading } = useAuth()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!loading && user) navigate('/dashboard', { replace: true })
+  }, [user, loading])
 
   const bg = isDark ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'
   const muted = isDark ? 'text-slate-400' : 'text-slate-500'

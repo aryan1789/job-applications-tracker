@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthProvider';
 import { isDark as themeIsDark } from '../lib/theme';
 
 export default function Signup() {
-  const { signUp } = useAuth();
+  const { signUp, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && user) navigate('/dashboard', { replace: true });
+  }, [user, authLoading]);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const isDark = themeIsDark();
@@ -23,8 +27,7 @@ export default function Signup() {
       if (res?.error) {
         setError(res.error.message);
       } else if (res?.data?.session) {
-        // Auto-confirmed (e.g. email confirmation disabled in Supabase)
-        navigate('/dashboard', { replace: true });
+        // navigation handled by useEffect once user state updates
       } else {
         setMessage('Check your email to confirm your account.');
       }

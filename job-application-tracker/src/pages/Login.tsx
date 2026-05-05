@@ -1,16 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthProvider';
 import { isDark as themeIsDark } from '../lib/theme';
 
 export default function Login() {
-  const { signIn, signInWithGoogle } = useAuth();
+  const { signIn, signInWithGoogle, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!authLoading && user) navigate('/dashboard', { replace: true });
+  }, [user, authLoading]);
   const isDark = themeIsDark();
 
   async function handleSubmit(e: React.FormEvent) {
@@ -19,11 +23,8 @@ export default function Login() {
     setError(null);
     try {
       const res = await signIn(email, password);
-      if (res?.error) {
-        setError(res.error.message);
-      } else {
-        navigate('/dashboard', { replace: true });
-      }
+      if (res?.error) setError(res.error.message);
+      // navigation is handled by the useEffect above once user state updates
     } catch (err: any) {
       setError(err?.message ?? String(err));
     } finally {
