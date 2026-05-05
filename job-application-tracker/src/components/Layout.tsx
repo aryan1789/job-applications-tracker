@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import { CgSidebarOpen } from 'react-icons/cg'
 import { IoMdNotifications, IoMdNotificationsOutline } from 'react-icons/io'
@@ -132,6 +133,14 @@ export default function Layout({ children }: Props) {
         </header>
 
         <main className="p-2">{children}</main>
+
+        <footer className={`px-4 py-2 text-center ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+          <div className="text-xs opacity-80">
+            <Link to="/privacy" className="hover:underline mx-1">Privacy</Link>
+            <span className="mx-1">·</span>
+            <Link to="/terms" className="hover:underline mx-1">Terms</Link>
+          </div>
+        </footer>
       </div>
     </div>
   )

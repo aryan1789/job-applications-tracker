@@ -7,6 +7,8 @@ import { NotificationsProvider } from './contexts/NotificationsContext.tsx'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import Privacy from './pages/Privacy.tsx'
+import Terms from './pages/Terms.tsx'
 import Dashboard from './pages/Dashboard'
 import Profile from './pages/Profile'
 import Layout from './components/Layout'
@@ -26,6 +28,8 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/profile" element={<Layout><Profile /></Layout>} />
               <Route path="/analytics" element={<Layout><Analytics /></Layout>} />
             </Route>
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
           </Routes>
         </NotificationsProvider>
       </AuthProvider>
