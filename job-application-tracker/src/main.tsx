@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App, { ProtectedRoute } from './App.tsx'
+import Home from './pages/Home.tsx'
 import { AuthProvider } from './contexts/AuthProvider.tsx'
 import { NotificationsProvider } from './contexts/NotificationsContext.tsx'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
@@ -20,7 +21,7 @@ createRoot(document.getElementById('root')!).render(
       <AuthProvider>
         <NotificationsProvider>
           <Routes>
-            <Route path="/" element={<App />} />
+            <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route element={<ProtectedRoute />}>
