@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import App, { ProtectedRoute } from './App.tsx'
+import { ProtectedRoute } from './App.tsx'
 import Home from './pages/Home.tsx'
 import { AuthProvider } from './contexts/AuthProvider.tsx'
 import { NotificationsProvider } from './contexts/NotificationsContext.tsx'
