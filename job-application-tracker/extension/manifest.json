@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Jobs Dashboard",
+  "version": "1.0.0",
+  "description": "Save job listings to Jobs Dashboard from Seek, Indeed, and LinkedIn.",
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Jobs Dashboard"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.seek.com/*",
+        "*://*.seek.com.au/*",
+        "*://*.indeed.com/*"
+      ],
+      "js": ["content/scraper.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": ["storage", "activeTab", "identity"],
+  "host_permissions": [
+    "*://*.seek.com/*",
+    "*://*.seek.com.au/*",
+    "*://*.indeed.com/*",
+    "https://wqozyedsddtwxkwpeusk.supabase.co/*"
+  ]
+}
