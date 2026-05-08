@@ -20,7 +20,7 @@ export default function Home() {
     <div className={`min-h-screen flex flex-col ${bg}`}>
 
       <header className={`border-b ${border} px-6 py-4 flex items-center justify-between`}>
-        <span className="font-extrabold text-xl tracking-tight">Jobs Dashboard</span>
+        <span className="font-extrabold text-xl tracking-tight">Jobs Tracker</span>
         <div className="flex gap-3">
           <Link
             to="/login"
@@ -29,7 +29,7 @@ export default function Home() {
             Sign in
           </Link>
           <Link
-            to="/signup"
+            to="/login"
             className="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700"
           >
             Get started
@@ -40,7 +40,7 @@ export default function Home() {
       <main className="flex-1" />
 
       <footer className={`border-t ${border} py-6 text-center text-sm ${muted}`}>
-        <span className="font-medium">Jobs Dashboard</span>
+        <span className="font-medium">Jobs Tracker</span>
         <span className="mx-2">·</span>
         <Link to="/privacy" className="underline hover:text-indigo-500">Privacy Policy</Link>
         <span className="mx-2">·</span>

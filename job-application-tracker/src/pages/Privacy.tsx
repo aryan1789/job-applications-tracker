@@ -20,11 +20,11 @@ export default function Privacy() {
 
         <section className="mb-5">
           <h2 className="font-medium mb-1">Browser extension</h2>
-          <p className="text-sm mb-2">The Jobs Dashboard browser extension is a companion tool for the web app. It operates as follows:</p>
+          <p className="text-sm mb-2">The Jobs Tracker browser extension is a companion tool for the web app. It operates as follows:</p>
           <ul className="text-sm list-disc list-inside space-y-1">
             <li>When you visit a supported job listing page (Seek, Indeed, LinkedIn), the extension may read the page's content to extract the job title and company name.</li>
             <li>It only reads job detail pages on supported sites — it does not monitor your general browsing history or read other page content.</li>
-            <li>Job details you choose to save are sent directly to your Jobs Dashboard account via Supabase. No data is sent to any other party.</li>
+            <li>Job details you choose to save are sent directly to your Jobs Tracker account via Supabase. No data is sent to any other party.</li>
             <li>Your authentication token is stored locally in the browser's extension storage (<code>chrome.storage.local</code>) and is used only to authenticate requests to your account.</li>
           </ul>
         </section>

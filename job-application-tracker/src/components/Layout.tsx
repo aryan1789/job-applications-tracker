@@ -61,7 +61,7 @@ export default function Layout({ children }: Props) {
             )}
 
             <h2 className={`!m-0 !text-lg !font-semibold !leading-snug tracking-tight ${isDark ? '!text-slate-100' : '!text-slate-950'}`}>
-              Jobs Dashboard
+              Jobs Tracker
             </h2>
           </div>
 

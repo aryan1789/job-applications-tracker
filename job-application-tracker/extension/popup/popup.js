@@ -20,10 +20,7 @@ async function generatePKCE() {
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 const loginView  = document.getElementById('login-view');
 const jobView    = document.getElementById('job-view');
-const emailEl    = document.getElementById('email');
-const passwordEl = document.getElementById('password');
 const googleBtn  = document.getElementById('google-btn');
-const loginBtn   = document.getElementById('login-btn');
 const loginMsg   = document.getElementById('login-msg');
 const signoutBtn = document.getElementById('signout-btn');
 const siteBadge  = document.getElementById('site-badge');
@@ -130,13 +127,6 @@ async function signInWithGoogle() {
   return supabaseFetch('/auth/v1/token?grant_type=pkce', {
     method: 'POST',
     body: JSON.stringify({ auth_code: code, code_verifier: verifier }),
-  });
-}
-
-async function signInWithPassword(email, password) {
-  return supabaseFetch('/auth/v1/token?grant_type=password', {
-    method: 'POST',
-    body: JSON.stringify({ email, password }),
   });
 }
 
@@ -263,29 +253,6 @@ googleBtn.addEventListener('click', async () => {
   }
 });
 
-loginBtn.addEventListener('click', async () => {
-  const email    = emailEl.value.trim();
-  const password = passwordEl.value;
-  if (!email || !password) {
-    showMsg(loginMsg, 'Enter your email and password.', 'error');
-    return;
-  }
-  loginBtn.disabled = true;
-  loginBtn.textContent = 'Signing in…';
-  hideMsg(loginMsg);
-
-  const { ok, data } = await signInWithPassword(email, password);
-  if (!ok || !data.access_token) {
-    showMsg(loginMsg, data.error_description ?? data.msg ?? 'Sign in failed.', 'error');
-    loginBtn.disabled = false;
-    loginBtn.textContent = 'Sign in';
-    return;
-  }
-  await handleAuthSuccess(data);
-});
-
-passwordEl.addEventListener('keydown', e => { if (e.key === 'Enter') loginBtn.click(); });
-
 signoutBtn.addEventListener('click', async () => {
   await clearSession();
   companyEl.value = '';
@@ -339,7 +306,7 @@ addBtn.addEventListener('click', async () => {
     return;
   }
 
-  showMsg(jobMsg, '✓ Added to Jobs Dashboard!', 'success');
+  showMsg(jobMsg, '✓ Added to Jobs Tracker!', 'success');
   companyEl.value = '';
   roleEl.value    = '';
   notesEl.value   = '';

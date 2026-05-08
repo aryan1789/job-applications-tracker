@@ -15,8 +15,6 @@ type AuthState = {
   profile: UserProfile | null;
   providerToken: string | null;
   refreshProfile: () => Promise<void>;
-  signUp: (email: string, pass: string) => Promise<any>;
-  signIn: (email: string, pass: string) => Promise<any>;
   signInWithGoogle: () => Promise<any>;
   signOut: () => Promise<any>;
 };
@@ -101,8 +99,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     profile,
     providerToken,
     refreshProfile,
-    signUp: (email, pass) => supabase.auth.signUp({ email, password: pass }),
-    signIn: (email, pass) => supabase.auth.signInWithPassword({ email, password: pass }),
     signInWithGoogle: () =>
       supabase.auth.signInWithOAuth({
         provider: 'google',
