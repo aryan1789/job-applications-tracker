@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthProvider';
 import { isDark as themeIsDark } from '../lib/theme';
 
@@ -57,6 +57,11 @@ export default function Login() {
         </button>
 
         {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
+
+        <p className={`mt-6 text-center text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+          No account?{' '}
+          <Link to="/signup" className="text-indigo-500 hover:underline">Sign up</Link>
+        </p>
       </div>
     </div>
   );
