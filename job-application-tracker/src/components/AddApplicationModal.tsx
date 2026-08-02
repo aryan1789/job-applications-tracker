@@ -10,6 +10,7 @@ interface Props {
     jobDescription: string;
     notes: string;
     status: JobStatus;
+    site: string;
   }) => void;
   isDark: boolean;
 }
@@ -26,6 +27,7 @@ export default function AddApplicationModal({
     jobDescription: "",
     notes: "",
     status: (STATUS && STATUS[0]) as JobStatus,
+    site: "",
   };
 
   const [form, setForm] = useState(emptyForm);
@@ -165,6 +167,20 @@ export default function AddApplicationModal({
                 </option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <label htmlFor="app-site" className={`block text-sm font-medium mb-1 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+              Site <span className={`font-normal ${isDark ? "text-slate-500" : "text-slate-400"}`}>(optional)</span>
+            </label>
+            <input
+              id="app-site"
+              value={form.site}
+              onChange={(e) => setForm((f) => ({ ...f, site: e.target.value }))}
+              className={`w-full border rounded px-3 py-2 ${isDark ? fieldDark : fieldLight}`}
+              placeholder="e.g. Seek, LinkedIn, Indeed"
+              autoComplete="off"
+            />
           </div>
 
           {formError && (

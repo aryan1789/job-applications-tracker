@@ -162,7 +162,7 @@ async function isDuplicate(accessToken, userId, company, role) {
 }
 
 // ── Add application ───────────────────────────────────────────────────────────
-async function addApplication(accessToken, userId, company, role, notes) {
+async function addApplication(accessToken, userId, company, role, notes, site) {
   return supabaseFetch('/rest/v1/applications', {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${accessToken}`, 'Prefer': 'return=minimal' },
@@ -173,6 +173,7 @@ async function addApplication(accessToken, userId, company, role, notes) {
       description:  '',
       notes:        notes.trim(),
       status:       'applied',
+      site:         site,
     }),
   });
 }
@@ -204,9 +205,10 @@ async function init() {
   if (tab?.url) {
     try {
       const host = new URL(tab.url).hostname.replace('www.', '');
+      currentSite = host.includes('seek') ? 'Seek' : host.includes('indeed') ? 'Indeed' : host;
       siteBadge.textContent = scraped?.role
-        ? `Scraped from ${host}`
-        : `On ${host} — fill in details below`;
+        ? `Scraped from ${currentSite}`
+        : `On ${currentSite} — fill in details below`;
     } catch { siteBadge.textContent = ''; }
   }
 }
@@ -217,8 +219,9 @@ async function handleAuthSuccess(data) {
   init();
 }
 
-// ── Duplicate state ───────────────────────────────────────────────────────────
+// ── State ─────────────────────────────────────────────────────────────────────
 let duplicateConfirmPending = false;
+let currentSite = '';
 
 // Reset duplicate confirm if user edits the fields
 [companyEl, roleEl].forEach(el => el.addEventListener('input', () => {
@@ -297,7 +300,7 @@ addBtn.addEventListener('click', async () => {
   duplicateConfirmPending = false;
   addBtn.textContent = 'Adding…';
 
-  const { ok, data } = await addApplication(token.access_token, token.user_id, company, role, notesEl.value);
+  const { ok, data } = await addApplication(token.access_token, token.user_id, company, role, notesEl.value, currentSite);
 
   if (!ok) {
     showMsg(jobMsg, data.message ?? 'Failed to add application.', 'error');

@@ -69,6 +69,7 @@ export type Job = {
   notes: string;
   status: JobStatus;
   createdAt: string;
+  site: string;
 };
 
 export type ApplicationStep = {

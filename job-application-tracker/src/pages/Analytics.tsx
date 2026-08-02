@@ -61,6 +61,7 @@ export default function Analytics() {
             role: '',
             jobDescription: '',
             notes: '',
+            site: '',
           }))
         )
         setLoading(false)

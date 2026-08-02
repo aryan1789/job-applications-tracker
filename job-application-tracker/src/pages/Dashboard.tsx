@@ -22,6 +22,7 @@ function supabaseDBToJob(row: Record<string, unknown>): Job {
     notes: row.notes as string,
     status: row.status as JobStatus,
     createdAt: row.created_at as string,
+    site: (row.site as string) ?? '',
   };
 }
 
@@ -106,12 +107,13 @@ export default function Dashboard() {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  async function handleAdd({company, role, jobDescription, notes, status}: {
-    company: string; 
-    role: string; 
+  async function handleAdd({company, role, jobDescription, notes, status, site}: {
+    company: string;
+    role: string;
     jobDescription: string;
-    notes: string; 
+    notes: string;
     status: JobStatus;
+    site: string;
   }) {
     if (!user) return;
     const { data, error } = await supabase
@@ -123,6 +125,7 @@ export default function Dashboard() {
         description: jobDescription.trim(),
         notes: notes.trim(),
         status: status,
+        site: site.trim(),
       })
       .select()
       .single();
